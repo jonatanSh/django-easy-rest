@@ -1,10 +1,20 @@
-from django.contrib.auth.models import User
-from rest_framework.views import APIView
+from .. import views
 
 
-class ListUser(APIView):
-    def get(self):
-        pass
+class MethodBased(views.MethodApiView):
+    method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
+                      'super_special': {"help": {"general": "general help",
+                                                 "another": "another help"}}}
+    api_allowed_methods = ['__all__']
 
-    def post(self):
-        pass
+    def correct(self, data):
+        return {"test": "test"}
+
+    def error(self, data):
+        return 1 / 0
+
+    def special_error(self, data):
+        return 1 / 0
+
+    def super_special(self, data):
+        return 1 / 0
