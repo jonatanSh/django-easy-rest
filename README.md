@@ -2,7 +2,7 @@
 
 django easy rest is built under django rest framework 
 
-the easy rest doest everything as simple as it gets
+the easy rest does everything as simple as it gets
 
 as you can see in the following demo.
 
