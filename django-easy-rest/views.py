@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.conf import settings
+from .utils.search_model import GetModelByString
 import json
 
 
@@ -14,6 +15,11 @@ class MethodApiView(APIView):
                            '{"{' + function_field_name + '}":"method", "get' + separator + 'help", "help' + separator + 'prefix":"input [..etc]"}')
     method_helpers = {'__all__': {"help": {"general": "this is a special message"}}}
     api_allowed_methods = ['__all__']
+
+    # this field is responsible of handling model get in functions
+    api_handle_models_get = True
+    # unpack api data into function
+    api_method_packers = True
 
     def get(self, serialized_object=None):
         data = {"class": "method view"} if not serialized_object else serialized_object.data
@@ -53,7 +59,7 @@ class MethodApiView(APIView):
         out = None
         additional = None
         try:
-            out = method(data)
+            out = method(**self.prepare_function_data(data=data, method=method))
         except Exception as error:
             key = '__all__' if action not in self.method_helpers else action
             if key in self.method_helpers:
@@ -75,3 +81,32 @@ class MethodApiView(APIView):
             return {"out": out}
         if settings.DEBUG:
             return {"debug": "method did not return any data"}
+
+    def prepare_function_data(self, data, method=None):
+        if not method or not self.api_method_packers:
+            return {"data": data}
+        keys = list(method.__code__.co_varnames)
+        keys.remove('self')
+        if len(keys) == 1:
+            print("ths ! ? ")
+            return {keys[0]: data}
+        print(len(keys), keys)
+        return {key: data.get(key, None) for key in keys if key in data}  # if key not in data default parameter ?
+
+    def api_abstractions(self, data):
+        if 'get{separator}model'.format(separator=self.separator):
+            '''
+            the get model is as follows:
+            
+            {"get-model": {"model-name":"User", "query":{"pk":5}, "app":"auth"}}
+            
+            or 
+            
+            {"get-model": {"model-name":"auth.User", "query":{"pk":5}}}
+            
+            default parameter name is lower of model name
+            
+            '''
+
+    def get_model(self, field, model_name=None, app_label=None):
+        pass

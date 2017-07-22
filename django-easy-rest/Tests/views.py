@@ -18,3 +18,6 @@ class MethodBased(views.MethodApiView):
 
     def super_special(self, data):
         return 1 / 0
+
+    def two_parms(self, a, b):
+        return {"a---": a, "-b-": b}
