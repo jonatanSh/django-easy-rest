@@ -82,16 +82,21 @@ class MethodApiView(APIView):
         if settings.DEBUG:
             return {"debug": "method did not return any data"}
 
-    def prepare_function_data(self, data, method=None):
+    def prepare_function_data(self, data, method=None, append_data=None):
+        if append_data is None:
+            append_data = {}
         if not method or not self.api_method_packers:
-            return {"data": data}
-        keys = list(method.__code__.co_varnames)
-        keys.remove('self')
-        if len(keys) == 1:
-            print("ths ! ? ")
-            return {keys[0]: data}
-        print(len(keys), keys)
-        return {key: data.get(key, None) for key in keys if key in data}  # if key not in data default parameter ?
+            data = {"data": data}
+        else:
+            keys = list(method.__code__.co_varnames)
+            keys.remove('self')
+            if len(keys) == 1:
+                data = {keys[0]: data}
+            else:
+                data = {key: data.get(key, None) for key in keys if
+                        key in data}  # if key not in data default parameter ?
+        data.update(append_data)
+        return data
 
     def api_abstractions(self, data):
         if 'get{separator}model'.format(separator=self.separator):
