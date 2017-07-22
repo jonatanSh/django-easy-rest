@@ -21,6 +21,10 @@ class MethodApiView(APIView):
     # unpack api data into function
     api_method_packers = True
 
+    # model resolver
+
+    model_resolver = GetModelByString()
+
     def get(self, serialized_object=None):
         data = {"class": "method view"} if not serialized_object else serialized_object.data
         return Response(data)
@@ -99,7 +103,8 @@ class MethodApiView(APIView):
         return data
 
     def api_abstractions(self, data):
-        if 'get{separator}model'.format(separator=self.separator):
+        get_model = 'get{separator}model'.format(separator=self.separator)
+        if get_model in data:
             '''
             the get model is as follows:
             
@@ -112,6 +117,18 @@ class MethodApiView(APIView):
             default parameter name is lower of model name
             
             '''
+            model = self.get_model(**data[get_model])
+            del data[get_model]
+            data.update(model)
+            return data
 
-    def get_model(self, field, model_name=None, app_label=None):
-        pass
+    def get_model(self, query, field, model_name=None, app=None, split_by='.'):
+        if app:
+            return {
+                model_name.lower(): self.model_resolver.get_model(model_name=model_name, app=app).objetcs.get(**query)}
+        else:
+            try:
+                app, model = field.split(split_by)
+                return {model.lower(): self.model_resolver.get_model(model_name=model, app=app).objetcs.get(**query)}
+            except ValueError:  # to many or not enough values to unpack
+                return None
