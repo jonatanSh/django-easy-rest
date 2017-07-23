@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'django-easy-rest'
+    'django_easy_rest'
 ]
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

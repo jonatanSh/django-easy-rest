@@ -3,7 +3,9 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.conf import settings
 from .utils.search_model import GetModelByString
+from .serializers import FullDebuggerSerializer
 import json
+from copy import copy
 
 
 class MethodApiView(APIView):
@@ -25,6 +27,8 @@ class MethodApiView(APIView):
 
     model_resolver = GetModelByString()
 
+    debug_serializer = FullDebuggerSerializer()
+
     def get(self, serialized_object=None):
         data = {"class": "method view"} if not serialized_object else serialized_object.data
         return Response(data)
@@ -39,9 +43,9 @@ class MethodApiView(APIView):
         if settings.DEBUG:
             base_response['debug'] = {}
         try:
-            data = self.api_abstractions(request.data)
+            data, debug_data = self.api_abstractions(request.data)
             if settings.DEBUG:
-                base_response = {"debug": {"processed-data": data}}
+                base_response = {"debug": {"processed-data": debug_data}}
             if self.function_field_name in data:
                 action = self._pythonize(data[self.function_field_name])
                 try:
@@ -118,6 +122,7 @@ class MethodApiView(APIView):
 
     def api_abstractions(self, data):
         get_model = 'get{separator}model'.format(separator=self.separator)
+        debug_data = copy(data)
         if get_model in data:
             '''
             the get model is as follows:
@@ -140,17 +145,18 @@ class MethodApiView(APIView):
                 data[get_model] = [data[get_model]]
             for i in range(len(data[get_model])):
                 print(data[get_model][i])
-                model = self.get_model(**data[get_model][i])
-                data[get_model][i] = model
-        return data
+                obj, debug_obj = self.get_model(**data[get_model][i])
+                data[get_model][i] = obj
+                debug_data[get_model][i] = debug_obj
+        return data, debug_data
 
     def get_model(self, query, field=None, model_name=None, app=None, split_by='.'):
         if app:
-            return {
-                model_name.lower(): self.model_resolver.get_model(model_name=model_name, app=app).objects.get(**query)}
+            model = self.model_resolver.get_model(model_name=model_name, app=app).objects.get(**query)
+            return {model_name.lower(): model}, {model_name.lower(): self.debug_serializer.serialize(model)}
         else:
             try:
                 app, model = field.split(split_by)
-                return {model.lower(): self.model_resolver.get_model(model_name=model, app=app).objects.get(**query)}
+                return self.get_model(query=query, app=app, model_name=model)
             except ValueError:  # to many or not enough values to unpack
-                return None
+                return None, None
