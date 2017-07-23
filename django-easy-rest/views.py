@@ -35,8 +35,12 @@ class MethodApiView(APIView):
 
     # {"action":"error"}
     def post(self, request):
+        base_response = {}
         try:
             if self.function_field_name in request.data:
+                data = self.api_abstractions(request.data)
+                if settings.DEBUG:
+                    base_response = {"debug": {"processed-data": data}}
                 action = self._pythonize(request.data[self.function_field_name])
                 try:
                     if action not in self.api_allowed_methods and '__all__' not in self.api_allowed_methods:
@@ -44,20 +48,23 @@ class MethodApiView(APIView):
                                                                                                             self.api_allowed_methods)},
                                         status=status.HTTP_403_FORBIDDEN)
                     _method = getattr(self, action)
-                    data = request.data
                     output = self._method_wrapper(data, _method, action)
                     if 'out' in output:
-                        return Response(data=output['out'], status=status.HTTP_200_OK)
+                        base_response['data'] = output['out']
+                        return Response(data=base_response, status=status.HTTP_200_OK)
                     else:
-                        return Response(data=output, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        base_response['data'] = output
+                        return Response(data=base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 except (AttributeError, ImportError):
-                    return Response(data={"error": "method not found"}, status=status.HTTP_404_NOT_FOUND)
-            return Response(data={"error": "no method in data"}, status=status.HTTP_400_BAD_REQUEST)
+                    base_response['error'] = "method not found"
+                    return Response(data=base_response, status=status.HTTP_404_NOT_FOUND)
+            base_response['error'] = "no method in data"
+            return Response(data=base_response, status=status.HTTP_400_BAD_REQUEST)
         except (Exception, json.JSONDecodeError) as error:
-            data = {"error": "general api error"}
+            base_response["error"] = "general api error"
             if settings.DEBUG:
-                data.update({'debug': {'exception-type': str(type(error)), 'exception-args': error.args}})
-            return Response(data=data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                base_response['debug'].update({'exception-type': str(type(error)), 'exception-args': error.args})
+            return Response(data=base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _method_wrapper(self, data, method, action):
         out = None
@@ -114,13 +121,17 @@ class MethodApiView(APIView):
             
             {"get-model": {"model-name":"auth.User", "query":{"pk":5}}}
             
+            for many use 
+            {"get-model":[{"model-name":"auth.User", "query":{"pk":5}},{"model-name":"auth.User", "query":{"pk":5}}]}
             default parameter name is lower of model name
             
             '''
-            model = self.get_model(**data[get_model])
-            del data[get_model]
-            data.update(model)
-            return data
+            if type(data[get_model]) is not list:
+                data[get_model] = [data[get_model]]
+            for i in range(len(data[get_model])):
+                model = self.get_model(**data[get_model][i])
+                data[get_model][i] = model
+        return data
 
     def get_model(self, query, field, model_name=None, app=None, split_by='.'):
         if app:
