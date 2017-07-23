@@ -50,7 +50,7 @@ class MethodApiView(APIView):
                 action = self._pythonize(data[self.function_field_name])
                 try:
                     if action not in self.api_allowed_methods and '__all__' not in self.api_allowed_methods:
-                        base_response['error'] = '{0} not allowed {1}, allowed {0} {2}'.format(self.function_field_name,
+                        base_response['error'] = '{0} {1} not allowed , allowed {0} {2}'.format(self.function_field_name,
                                                                                                action,
                                                                                                self.api_allowed_methods)
                         return Response(data=base_response,
