@@ -45,7 +45,7 @@ urls.py
 ```python
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from . import views
+from django_easy_rest import views
 
 urlpatterns = [
     url(r'^test/', views.MethodBased.as_view()),
@@ -149,3 +149,56 @@ output:
 }
 ```
 
+# Easy rest unpackers:
+```python
+
+from django_easy_rest import views
+
+class MethodBased(views.MethodApiView):
+    def get_username(self, user):
+        return {"username": user.username}
+
+
+```
+
+input
+
+```json
+{"action":"correct", "get-model": {"field":"auth.User", "query":{"pk":1}}}
+```
+
+output (debug mode)
+
+```json
+
+{
+    "debug": {
+        "processed-data": {
+            "user": {
+                "_state": {
+                    "db": "default",
+                    "adding": false
+                },
+                "first_name": "",
+                "is_superuser": true,
+                "is_staff": true,
+                "last_login": "2017-07-23T11:49:41.804352Z",
+                "is_active": true,
+                "email": "s@s.com",
+                "id": 1,
+                "date_joined": "2017-07-21T19:02:39.414653Z",
+                "username": "jonatan",
+                "last_name": "",
+                "_password": null,
+                "password": "pbkdf2_sha256$36000$oqbcQyNRQE2S$QOS41M4EvGkvLZpS4mzlBPA7CftTRuoG3jcQzYL0QvQ="
+            },
+            "action": "correct"
+        }
+    },
+    "data": {
+        "test": "test"
+    }
+}
+
+
+```
