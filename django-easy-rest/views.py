@@ -133,23 +133,24 @@ class MethodApiView(APIView):
             default parameter name is lower of model name
             
             demo:
-            {"action":"correct", "get-model": {"model-name":"auth.User", "query":{"pk":1}}}
+            {"action":"correct", "get-model": {"field":"auth.User", "query":{"pk":1}}}
             
             '''
             if type(data[get_model]) is not list:
                 data[get_model] = [data[get_model]]
             for i in range(len(data[get_model])):
+                print(data[get_model][i])
                 model = self.get_model(**data[get_model][i])
                 data[get_model][i] = model
         return data
 
-    def get_model(self, query, field, model_name=None, app=None, split_by='.'):
+    def get_model(self, query, field=None, model_name=None, app=None, split_by='.'):
         if app:
             return {
-                model_name.lower(): self.model_resolver.get_model(model_name=model_name, app=app).objetcs.get(**query)}
+                model_name.lower(): self.model_resolver.get_model(model_name=model_name, app=app).objects.get(**query)}
         else:
             try:
                 app, model = field.split(split_by)
-                return {model.lower(): self.model_resolver.get_model(model_name=model, app=app).objetcs.get(**query)}
+                return {model.lower(): self.model_resolver.get_model(model_name=model, app=app).objects.get(**query)}
             except ValueError:  # to many or not enough values to unpack
                 return None
