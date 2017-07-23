@@ -164,7 +164,7 @@ class MethodBased(views.MethodApiView):
 input
 
 ```json
-{"action":"correct", "get-model": {"field":"auth.User", "query":{"pk":1}}}
+{"action":"get_username", "get-model": {"field":"auth.User", "query":{"pk":1}}}
 ```
 
 output (debug mode)
