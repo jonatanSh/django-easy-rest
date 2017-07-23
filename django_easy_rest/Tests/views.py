@@ -22,5 +22,5 @@ class MethodBased(views.MethodApiView):
     def two_parms(self, a, b):
         return {"a---": a, "-b-": b}
 
-    def new_method(self, data):
-        return {"message":"new data"}
+    def get_username(self, user):
+        return {"username": user.username}

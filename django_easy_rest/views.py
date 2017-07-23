@@ -21,7 +21,7 @@ class MethodApiView(APIView):
     # this field is responsible of handling model get in functions
     api_handle_models_get = True
     # unpack api data into function
-    api_method_packers = True
+    api_method_unpackers = True
 
     # model resolver
 
@@ -105,20 +105,26 @@ class MethodApiView(APIView):
             return {}, {"error": '{} did not return any data'.format(self.function_field_name)}
 
     def prepare_function_data(self, data, method=None, append_data=None):
+        prepared_data = {}
         if append_data is None:
             append_data = {}
-        if not method or not self.api_method_packers:
-            data = {"data": data}
+        if not method or not self.api_method_unpackers:
+            prepared_data = {"data": data}
         else:
             keys = list(method.__code__.co_varnames)
-            keys.remove('self')
-            if len(keys) == 1:
-                data = {keys[0]: data}
-            else:
-                data = {key: data.get(key, None) for key in keys if
-                        key in data}  # if key not in data default parameter ?
-        data.update(append_data)
-        return data
+            if 'self' in keys:
+                keys.remove('self')
+            if not keys:
+                keys = []
+            unpacked = False
+            for key in keys:
+                if key in data:
+                    unpacked = True
+                    prepared_data[key] = data[key]
+            if not unpacked:
+                prepared_data = {keys[0]: data}
+        prepared_data.update(append_data)
+        return prepared_data
 
     def api_abstractions(self, data):
         get_model = 'get{separator}model'.format(separator=self.separator)
@@ -144,10 +150,11 @@ class MethodApiView(APIView):
             if type(data[get_model]) is not list:
                 data[get_model] = [data[get_model]]
             for i in range(len(data[get_model])):
-                print(data[get_model][i])
                 obj, debug_obj = self.get_model(**data[get_model][i])
-                data[get_model][i] = obj
-                debug_data[get_model][i] = debug_obj
+                data.update(obj)
+                debug_data.update(debug_obj)
+            del data[get_model]
+            del debug_data[get_model]
         return data, debug_data
 
     def get_model(self, query, field=None, model_name=None, app=None, split_by='.'):
