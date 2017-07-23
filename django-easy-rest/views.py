@@ -10,9 +10,9 @@ class MethodApiView(APIView):
     function_field_name = 'action'
     separator = '-'
     general_help_string = ('you can get help by: '
-                           '{"{' + function_field_name + '}":"method", "get' + separator + 'help"}'
-                                                                                           'for specific help: ',
-                           '{"{' + function_field_name + '}":"method", "get' + separator + 'help", "help' + separator + 'prefix":"input [..etc]"}')
+                           '{"{' + function_field_name + '}":"' + function_field_name + '", "get' + separator + 'help"}'
+                                                                                                                'for specific help: ',
+                           '{"{' + function_field_name + '}":"' + function_field_name + '", "get' + separator + 'help", "help' + separator + 'prefix":"input [..etc]"}')
     method_helpers = {'__all__': {"help": {"general": "this is a special message"}}}
     api_allowed_methods = ['__all__']
 
@@ -36,29 +36,35 @@ class MethodApiView(APIView):
     # {"action":"error"}
     def post(self, request):
         base_response = {}
+        if settings.DEBUG:
+            base_response['debug'] = {}
         try:
-            if self.function_field_name in request.data:
-                data = self.api_abstractions(request.data)
-                if settings.DEBUG:
-                    base_response = {"debug": {"processed-data": data}}
-                action = self._pythonize(request.data[self.function_field_name])
+            data = self.api_abstractions(request.data)
+            if settings.DEBUG:
+                base_response = {"debug": {"processed-data": data}}
+            if self.function_field_name in data:
+                action = self._pythonize(data[self.function_field_name])
                 try:
                     if action not in self.api_allowed_methods and '__all__' not in self.api_allowed_methods:
-                        return Response(data={"error": "method not allowed {0}, allowed methods {1}".format(action,
-                                                                                                            self.api_allowed_methods)},
+                        base_response['error'] = '{0} not allowed {1}, allowed {0} {2}'.format(self.function_field_name,
+                                                                                               action,
+                                                                                               self.api_allowed_methods)
+                        return Response(data=base_response,
                                         status=status.HTTP_403_FORBIDDEN)
                     _method = getattr(self, action)
-                    output = self._method_wrapper(data, _method, action)
+                    output, debug = self._method_wrapper(data, _method, action)
+                    base_response['debug'].update(debug)
                     if 'out' in output:
                         base_response['data'] = output['out']
                         return Response(data=base_response, status=status.HTTP_200_OK)
                     else:
                         base_response['data'] = output
                         return Response(data=base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                except (AttributeError, ImportError):
-                    base_response['error'] = "method not found"
+                except (AttributeError, ImportError) as error:
+                    base_response['error'] = "{} not found".format(self.function_field_name)
+                    base_response['debug'].update({"exception": str(error)})
                     return Response(data=base_response, status=status.HTTP_404_NOT_FOUND)
-            base_response['error'] = "no method in data"
+            base_response['error'] = "no {} in data".format(self.function_field_name)
             return Response(data=base_response, status=status.HTTP_400_BAD_REQUEST)
         except (Exception, json.JSONDecodeError) as error:
             base_response["error"] = "general api error"
@@ -69,6 +75,7 @@ class MethodApiView(APIView):
     def _method_wrapper(self, data, method, action):
         out = None
         additional = None
+        debug = {}
         try:
             out = method(**self.prepare_function_data(data=data, method=method))
         except Exception as error:
@@ -84,14 +91,14 @@ class MethodApiView(APIView):
                 additional = {'error': "Exception occurred in method check function usage",
                               self.function_field_name: action}
             if settings.DEBUG:
-                additional.update({'debug': {'exception-type': str(type(error)), 'exception-args': error.args}})
+                debug = {'exception-type': str(type(error)), 'exception-args': error.args}
 
         if additional:
-            return additional
+            return additional, debug
         if out:
-            return {"out": out}
+            return {"out": out}, debug
         if settings.DEBUG:
-            return {"debug": "method did not return any data"}
+            return {}, {"error": '{} did not return any data'.format(self.function_field_name)}
 
     def prepare_function_data(self, data, method=None, append_data=None):
         if append_data is None:
@@ -124,6 +131,9 @@ class MethodApiView(APIView):
             for many use 
             {"get-model":[{"model-name":"auth.User", "query":{"pk":5}},{"model-name":"auth.User", "query":{"pk":5}}]}
             default parameter name is lower of model name
+            
+            demo:
+            {"action":"correct", "get-model": {"model-name":"auth.User", "query":{"pk":1}}}
             
             '''
             if type(data[get_model]) is not list:
