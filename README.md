@@ -192,11 +192,11 @@ output (debug mode)
                 "_password": null,
                 "password": "pbkdf2_sha256$36000$oqbcQyNRQE2S$QOS41M4EvGkvLZpS4mzlBPA7CftTRuoG3jcQzYL0QvQ="
             },
-            "action": "correct"
+            "action": "get_username"
         }
     },
     "data": {
-        "test": "test"
+        "username": "jonatan"
     }
 }
 
