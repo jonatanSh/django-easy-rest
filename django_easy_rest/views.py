@@ -162,13 +162,15 @@ class FullMethodApiView(APIView):
         del debug_data[get_model]
         return data, debug_data
 
-    def get_model(self, query, field=None, model_name=None, app=None, split_by='.'):
+    def get_model(self, query, field=None, model_name=None, app=None, split_by='.', name=None):
         if app:
             model = self.model_resolver.get_model(model_name=model_name, app=app).objects.get(**query)
-            return {model_name.lower(): model}, {model_name.lower(): self.debug_serializer.serialize(model)}
+            if not name:
+                name = model_name.lower()
+            return {name: model}, {name: self.debug_serializer.serialize(model)}
         else:
             try:
                 app, model = field.split(split_by)
-                return self.get_model(query=query, app=app, model_name=model)
+                return self.get_model(query=query, app=app, model_name=model, split_by=split_by, name=name)
             except ValueError:  # to many or not enough values to unpack
                 return None, None
