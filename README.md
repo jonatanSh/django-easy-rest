@@ -4,11 +4,85 @@ django easy rest is built under django rest framework
 
 the easy rest does everything as simple as it gets
 
-as you can see in the following demo.
+as you can see in the following examples:
 
-in this demo i'll declare 4 rest methods
+# Examples:
 
-# Demo 
+first the easy rest unpackers:
+
+# Easy rest unpackers:
+
+unpacks the data into python variables it features:
+
+1. model unpacking (searching for the right model/s by name and unpack it)
+
+2. variables unpacking
+
+# Example
+
+
+```python
+
+from django_easy_rest import views
+
+class MethodBased(views.FullMethodApiView):
+    def get_username(self, user):
+        return {"username": user.username}
+
+
+```
+
+input
+
+```json
+{"action":"get_username", "get-model": {"field":"auth.User", "query":{"pk":1}}}
+```
+
+output (debug mode)
+
+```json
+
+{
+    "debug": {
+        "processed-data": {
+            "user": {
+                "_state": {
+                    "db": "default",
+                    "adding": false
+                },
+                "first_name": "",
+                "is_superuser": true,
+                "is_staff": true,
+                "last_login": "2017-07-23T11:49:41.804352Z",
+                "is_active": true,
+                "email": "s@s.com",
+                "id": 1,
+                "date_joined": "2017-07-21T19:02:39.414653Z",
+                "username": "jonatan",
+                "last_name": "",
+                "_password": null,
+                "password": "pbkdf2_sha256$36000$oqbcQyNRQE2S$QOS41M4EvGkvLZpS4mzlBPA7CftTRuoG3jcQzYL0QvQ="
+            },
+            "action": "get_username"
+        }
+    },
+    "data": {
+        "username": "jonatan"
+    }
+}
+
+```
+
+as we can see the unpackers got the first user with a pk of 1
+
+and return it to the function because the call was made under debug mode the unpackers
+
+returned a debug field in the data.
+
+
+# More examples of django easy rest 
+
+# **setup** #
 
 views.py
 
@@ -63,6 +137,9 @@ and check our rest, here are some examples of inputs and outputs
 for the following view.
 
 important! note that the outputs add a debug field if settings.DEBUG = True 
+
+# **inputs and outputs** #
+
 
 input:
 
@@ -149,56 +226,3 @@ output:
 }
 ```
 
-# Easy rest unpackers:
-```python
-
-from django_easy_rest import views
-
-class MethodBased(views.FullMethodApiView):
-    def get_username(self, user):
-        return {"username": user.username}
-
-
-```
-
-input
-
-```json
-{"action":"get_username", "get-model": {"field":"auth.User", "query":{"pk":1}}}
-```
-
-output (debug mode)
-
-```json
-
-{
-    "debug": {
-        "processed-data": {
-            "user": {
-                "_state": {
-                    "db": "default",
-                    "adding": false
-                },
-                "first_name": "",
-                "is_superuser": true,
-                "is_staff": true,
-                "last_login": "2017-07-23T11:49:41.804352Z",
-                "is_active": true,
-                "email": "s@s.com",
-                "id": 1,
-                "date_joined": "2017-07-21T19:02:39.414653Z",
-                "username": "jonatan",
-                "last_name": "",
-                "_password": null,
-                "password": "pbkdf2_sha256$36000$oqbcQyNRQE2S$QOS41M4EvGkvLZpS4mzlBPA7CftTRuoG3jcQzYL0QvQ="
-            },
-            "action": "get_username"
-        }
-    },
-    "data": {
-        "username": "jonatan"
-    }
-}
-
-
-```
