@@ -140,19 +140,24 @@ class MethodApiView(APIView):
             {"get-model": {"model-name":"auth.User", "query":{"pk":5}}}
             
             for many use 
-            {"get-model":[{"model-name":"auth.User", "query":{"pk":5}},{"model-name":"auth.User", "query":{"pk":5}}]}
+           {"action":"correct", "get-model": [{"field":"auth.User", "query":{"pk":1}},{"field":"auth.User", "query":{"pk":1}}]}
             default parameter name is lower of model name
             
             demo:
-            {"action":"correct", "get-model": {"field":"auth.User", "query":{"pk":1}}}
+            {"action":"correct", "get-model": [{"field":"auth.User", "query":{"pk":1}},{"field":"auth.User", "query":{"pk":1}}]}
             
             '''
             if type(data[get_model]) is not list:
                 data[get_model] = [data[get_model]]
             for i in range(len(data[get_model])):
                 obj, debug_obj = self.get_model(**data[get_model][i])
-                data.update(obj)
-                debug_data.update(debug_obj)
+                prm_key = list(obj.keys())[0]
+                if prm_key in data:
+                    data[prm_key] = [data[prm_key], obj[prm_key]]
+                    debug_data[prm_key] = [debug_data[prm_key], debug_obj[prm_key]]
+                else:
+                    data.update(obj)
+                    debug_data.update(debug_obj)
             del data[get_model]
             del debug_data[get_model]
         return data, debug_data
