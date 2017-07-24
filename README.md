@@ -17,7 +17,7 @@ views.py
 from easy_rest import views
 
 
-class MethodBased(views.MethodApiView):
+class MethodBased(views.FullMethodApiView):
     method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
                       'super_special': {"help": {"general": "general help",
                                                  "another": "another help"}}}
@@ -154,7 +154,7 @@ output:
 
 from django_easy_rest import views
 
-class MethodBased(views.MethodApiView):
+class MethodBased(views.FullMethodApiView):
     def get_username(self, user):
         return {"username": user.username}
 

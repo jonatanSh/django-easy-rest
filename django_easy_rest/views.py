@@ -8,7 +8,7 @@ import json
 from copy import copy
 
 
-class MethodApiView(APIView):
+class FullMethodApiView(APIView):
     function_field_name = 'action'
     separator = '-'
     general_help_string = ('you can get help by: '

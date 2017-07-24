@@ -1,7 +1,7 @@
 from .. import views
 
 
-class MethodBased(views.MethodApiView):
+class MethodBased(views.FullMethodApiView):
     method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
                       'super_special': {"help": {"general": "general help",
                                                  "another": "another help"}}}
