@@ -20,6 +20,7 @@ unpacks the data into python variables it features:
 
 # Example
 
+views.py
 
 ```python
 
@@ -31,6 +32,8 @@ class MethodBased(views.FullMethodApiView):
 
 
 ```
+
+and that's it
 
 input
 
@@ -73,11 +76,22 @@ output (debug mode)
 
 ```
 
-as we can see the unpackers got the first user with a pk of 1
+as we can see the unpacker got the user with a pk of 1
 
-and return it to the function because the call was made under debug mode the unpackers
+and returned it to the function because the call was made under debug mode the easy-rest
 
-returned a debug field in the data.
+returned a debug field in the data, with useful information about the current query.
+
+# Additional fields:
+
+1. query many users into a users variable
+```json
+{"action":"get_username", "get-model": [{"field":"auth.User", "query":{"pk":1}, "name":"users"},
+{"field":"auth.User", "query":{"pk":2}, "name":"users"}]}
+```
+this will return a list called users into a function containing two models,
+ 
+a user with a pk of 1 and a user with the pk of 2
 
 
 # More examples of django easy rest 
