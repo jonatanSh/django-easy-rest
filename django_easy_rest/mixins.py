@@ -82,3 +82,34 @@ class MethodApiHelpMixin(object):
             return out, debug, False
         if settings.DEBUG:
             return {}, {"error": '{} did not return any data'.format(self.function_field_name)}, True
+
+
+class DecorativeKeysMethodApi(object):
+    separator = '-'
+
+    def _pythonize(self, name):
+        """
+        make action/method name into python friendly variable.
+        :param name:
+        :return:
+        """
+        if ' ' in name:
+            name = name.replace(' ', '_')
+        if '-' in name:
+            name = name.replace('-', "_")
+        if self.separator in name:
+            name = name.replace(self.separator, '_')
+        return name.lower()
+
+    def restifiy(self, data):
+        """
+        Created a rest item key.
+        :param data:
+        :return:
+        """
+        if ' ' in data:
+            return data.replace(' ', self.separator)
+        if '_' in data:
+            return data.replace('_', self.separator)
+        if '-' in data:
+            return data.replace('-', self.separator)

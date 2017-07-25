@@ -1,7 +1,8 @@
 from .. import views
+from ..mixins import DecorativeKeysMethodApi, MethodApiHelpMixin
 
 
-class MethodBased(views.ModelMethodBasedApi):
+class MethodBased(DecorativeKeysMethodApi, MethodApiHelpMixin, views.ModelMethodBasedApi):
     method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
                       'super_special': {"help": {"general": "general help",
                                                  "another": "another help"}}}
@@ -24,3 +25,6 @@ class MethodBased(views.ModelMethodBasedApi):
 
     def get_username(self, user):
         return {"username": user.username}
+
+    def test(self, data):
+        return {"new action": "test"}

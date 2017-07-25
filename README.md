@@ -25,9 +25,9 @@ views.py
 ```python
 
 from django_easy_rest import views
-from django_easy_rest.mixins import MethodApiHelpMixin
+from django_easy_rest.mixins import MethodApiHelpMixin,DecorativeKeysMethodApi
 
-class MethodBased(MethodApiHelpMixin, views.ModelMethodBasedApi):
+class MethodBased(MethodApiHelpMixin,DecorativeKeysMethodApi, views.ModelMethodBasedApi):
     def get_username(self, user):
         return {"username": user.username}
 
@@ -108,7 +108,7 @@ from django_easy_rest import views
 from django_easy_rest.mixins import MethodApiHelpMixin,MethodApiUnPackerMixin
 
 
-class MethodBased(MethodApiUnPackerMixin,MethodApiHelpMixin,views.MethodBasedApi):
+class MethodBased(MethodApiUnPackerMixin,MethodApiHelpMixin,DecorativeKeysMethodApi,views.MethodBasedApi):
     method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
                       'super_special': {"help": {"general": "general help",
                                                  "another": "another help"}}}
@@ -242,4 +242,6 @@ output:
     }
 }
 ```
+
+# Mixins:
 

@@ -11,7 +11,6 @@ from copy import copy
 
 class MethodBasedApi(APIView):
     function_field_name = 'action'
-    separator = '-'
     api_allowed_methods = ['__all__']
 
     get_data = {}
@@ -25,31 +24,10 @@ class MethodBasedApi(APIView):
         return Response(self.get_data)
 
     def _pythonize(self, name):
-        """
-        make action/method name into python friendly variable.
-        :param name:
-        :return:
-        """
-        if ' ' in name:
-            name = name.replace(' ', '_')
-        if '-' in name:
-            name = name.replace('-', "_")
-        if self.separator in name:
-            name = name.replace(self.separator, '_')
         return name.lower()
 
     def restifiy(self, data):
-        """
-        Created a rest item key.
-        :param data:
-        :return:
-        """
-        if ' ' in data:
-            return data.replace(' ', self.separator)
-        if '_' in data:
-            return data.replace('_', self.separator)
-        if '-' in data:
-            return data.replace('-', self.separator)
+        return data
 
     def post(self, request):
 
