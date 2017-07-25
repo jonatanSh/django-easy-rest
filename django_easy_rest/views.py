@@ -5,36 +5,54 @@ from django.conf import settings
 from .utils.search_model import GetModelByString
 from .serializers import FullDebuggerSerializer
 import json
+from .mixins import MethodUnPackerMixin
 from copy import copy
 
 
-class FullMethodApiView(APIView):
+class MethodBasedApi(APIView):
     function_field_name = 'action'
     separator = '-'
-    general_help_string = ('you can get help by: '
-                           '{"{' + function_field_name + '}":"' + function_field_name + '", "get' + separator + 'help"}'
-                                                                                                                'for specific help: ',
-                           '{"{' + function_field_name + '}":"' + function_field_name + '", "get' + separator + 'help", "help' + separator + 'prefix":"input [..etc]"}')
+    general_help_string = 'for function summary use: {usage}'
     method_helpers = {'__all__': {"help": {"general": "this is a special message"}}}
     api_allowed_methods = ['__all__']
 
-    api_abstraction_methods = ['__all__']
+    get_data = {}
 
-    # model resolver
+    # initial value
+    base_response = None
 
-    model_resolver = GetModelByString()
+    def initial(self, request, *args, **kwargs):
+        try:
+            self.general_help_string.format(self.get_general_function_help_usage())
+        except Exception:
+            pass
+        super(MethodBasedApi, self).initial(request, *args, **kwargs)
 
-    debug_serializer = FullDebuggerSerializer()
+    def get(self, reuqest):
+        if type(self.get_data) is not dict or type(self.get_data) is not str:
+            self.get_data = {}
+        return Response(self.get_data)
 
-    def get(self, serialized_object=None):
-        data = {"class": "method view"} if not serialized_object else serialized_object.data
-        return Response(data)
-
-    @staticmethod
-    def _pythonize(name):
-        return name.replace('-', '_').lower()
+    def _pythonize(self, name):
+        """
+        make action/method name into python friendly variable.
+        :param name:
+        :return:
+        """
+        if ' ' in name:
+            name = name.replace(' ', '_')
+        if '-' in name:
+            name = name.replace('-', "_")
+        if self.separator in name:
+            name = name.replace(self.separator, '_')
+        return name.lower()
 
     def restifiy(self, data):
+        """
+        Created a rest item key.
+        :param data:
+        :return:
+        """
         if ' ' in data:
             return data.replace(' ', self.separator)
         if '_' in data:
@@ -42,62 +60,82 @@ class FullMethodApiView(APIView):
         if '-' in data:
             return data.replace('-', self.separator)
 
-    # {"action":"error"}
     def post(self, request):
-        base_response = {}
-        if settings.DEBUG:
-            base_response['debug'] = {self.restifiy("api attributes"):
-                                          {self.restifiy("api allowed methods"): self.api_allowed_methods,
-                                           self.restifiy("api abstraction methods"): self.api_abstraction_methods}}
+
+        self.base_response = self.create_base_response()
+
         try:
-            data, debug_data = self.api_abstractions(request.data)
-            if settings.DEBUG:
-                base_response["debug"]["processed-data"] = debug_data
+            data = self.api_abstractions(request.data)
+            print(data)
             if self.function_field_name in data:
                 action = self._pythonize(data[self.function_field_name])
                 try:
                     if action not in self.api_allowed_methods and '__all__' not in self.api_allowed_methods:
-                        base_response['error'] = '{0} {1} not allowed , allowed {0} {2}'.format(
+                        self.base_response['error'] = '{0} {1} not allowed , allowed {0} {2}'.format(
                             self.function_field_name,
                             action,
                             self.api_allowed_methods)
-                        return Response(data=base_response,
+                        return Response(data=self.base_response,
                                         status=status.HTTP_403_FORBIDDEN)
                     _method = getattr(self, action)
-                    output, debug = self._method_wrapper(data, _method, action)
-                    base_response['debug'].update(debug)
-                    if 'out' in output:
-                        base_response['data'] = output['out']
-                        return Response(data=base_response, status=status.HTTP_200_OK)
+                    output, debug, error = self._method_wrapper(data, _method, action)
+                    self.base_response['debug'].update(debug)
+                    self.base_response['data'] = output
+                    if not error:
+                        return Response(data=self.base_response, status=status.HTTP_200_OK)
                     else:
-                        base_response['data'] = output
-                        return Response(data=base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        return Response(data=self.base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 except (AttributeError, ImportError) as error:
-                    base_response['error'] = "{} not found".format(self.function_field_name)
-                    base_response['debug'].update({"exception": str(error)})
-                    return Response(data=base_response, status=status.HTTP_404_NOT_FOUND)
-            base_response['error'] = "no {} in data".format(self.function_field_name)
-            return Response(data=base_response, status=status.HTTP_400_BAD_REQUEST)
+                    self.base_response['error'] = "{} not found".format(self.function_field_name)
+                    self.base_response['debug'].update({"exception": str(error)})
+                    return Response(data=self.base_response, status=status.HTTP_404_NOT_FOUND)
+            self.base_response['error'] = "no {} in data".format(self.function_field_name)
+            return Response(data=self.base_response, status=status.HTTP_400_BAD_REQUEST)
         except (Exception, json.JSONDecodeError) as error:
-            base_response["error"] = "general api error"
+            self.base_response["error"] = "general api error"
             if settings.DEBUG:
-                base_response['debug'].update({'exception-type': str(type(error)), 'exception-args': error.args})
-            return Response(data=base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                self.base_response['debug'].update({'exception-type': str(type(error)), 'exception-args': error.args})
+            return Response(data=self.base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_general_function_help_usage(self, action=None):
+        if not action:
+            action = "specific" + self.function_field_name
+        help_prefix_string = self.restifiy('help prefix')
+        return {self.function_field_name: action, help_prefix_string: "specific error"}
+
+    def create_base_response(self):
+        if settings.DEBUG:
+            return {'debug': {
+                self.restifiy("api attributes"): {self.restifiy("api allowed methods"): self.api_allowed_methods}}}
+        return {}
+
+    def call_method(self, data, method):
+        return method(data)
 
     def _method_wrapper(self, data, method, action):
+        """
+
+        :param data: request.data (dict)
+        :param method: method to call inside api (object)
+        :param action: action name (str)
+        :return: function data, debug, error [type = Bool]
+        """
         out = None
         additional = None
         debug = {}
         try:
-            out = method(**self.prepare_function_data(data=data, method=method))
+            out = self.call_method(data=data, method=method)
         except Exception as error:
             key = '__all__' if action not in self.method_helpers else action
             if key in self.method_helpers:
-                help_prefix = data.get('help' + self.separator + 'prefix', 'general')
+                help_prefix_string = self.restifiy('help prefix')
+                help_prefix = data.get(help_prefix_string, 'general')
                 help_message = {"message": self.method_helpers[key]['help'].get(help_prefix, 'help not found'),
-                                'usage': 'specific help use {action:' + action + ', help' + self.separator + 'prefix:specific error}',
-                                'help' + self.separator + "list": 'available help entries {}'.format(
-                                    self.method_helpers[key]['help'].keys())}
+                                'usage': 'specific help use {usage}'.format(
+                                    usage=self.get_general_function_help_usage(action=action)),
+                                self.restifiy('help list'): 'available help entries {helpers}'.format(
+                                    helpers=self.method_helpers[key]['help'].keys())}
+
                 additional = {"help": help_message}
             else:
                 additional = {'error': "Exception occurred in method check function usage",
@@ -106,33 +144,30 @@ class FullMethodApiView(APIView):
                 debug = {'exception-type': str(type(error)), 'exception-args': error.args}
 
         if additional:
-            return additional, debug
+            return additional, debug, True
         if out:
-            return {"out": out}, debug
+            return out, debug, False
         if settings.DEBUG:
-            return {}, {"error": '{} did not return any data'.format(self.function_field_name)}
+            return {}, {"error": '{} did not return any data'.format(self.function_field_name)}, True
 
-    def prepare_function_data(self, data, method=None, append_data=None):
-        prepared_data = {}
-        if append_data is None:
-            append_data = {}
-        if not method:
-            prepared_data = {"data": data}
-        else:
-            keys = list(method.__code__.co_varnames)
-            if 'self' in keys:
-                keys.remove('self')
-            if not keys:
-                keys = []
-            unpacked = False
-            for key in keys:
-                if key in data:
-                    unpacked = True
-                    prepared_data[key] = data[key]
-            if not unpacked:
-                prepared_data = {keys[0]: data}
-        prepared_data.update(append_data)
-        return prepared_data
+    def api_abstractions(self, data):
+        """
+        Implement this method in the complex api view
+        change base response here according to new data
+        :param data:
+        :return:
+        """
+        return data
+
+
+class ModelMethodBasedApi(MethodUnPackerMixin, MethodBasedApi):
+    api_abstraction_methods = ['__all__']
+
+    # model resolver
+
+    model_resolver = GetModelByString()
+
+    debug_serializer = FullDebuggerSerializer()
 
     def api_abstractions(self, data):
         debug_data = copy(data)
@@ -144,7 +179,9 @@ class FullMethodApiView(APIView):
             get_model_key = self.restifiy('get model')
             if get_model_key in data:
                 data, debug_data = self.handle_get_model(data=data, get_model=get_model_key, debug_data=debug_data)
-        return data, debug_data
+
+        self.base_response['debug'][self.restifiy('processed data')] = debug_data
+        return data
 
     def handle_get_model(self, data, get_model, debug_data):
         if type(data[get_model]) is not list:
