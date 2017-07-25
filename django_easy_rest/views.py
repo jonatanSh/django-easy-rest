@@ -5,28 +5,19 @@ from django.conf import settings
 from .utils.search_model import GetModelByString
 from .serializers import FullDebuggerSerializer
 import json
-from .mixins import MethodUnPackerMixin
+from .mixins import MethodApiUnPackerMixin
 from copy import copy
 
 
 class MethodBasedApi(APIView):
     function_field_name = 'action'
     separator = '-'
-    general_help_string = 'for function summary use: {usage}'
-    method_helpers = {'__all__': {"help": {"general": "this is a special message"}}}
     api_allowed_methods = ['__all__']
 
     get_data = {}
 
     # initial value
     base_response = None
-
-    def initial(self, request, *args, **kwargs):
-        try:
-            self.general_help_string.format(self.get_general_function_help_usage())
-        except Exception:
-            pass
-        super(MethodBasedApi, self).initial(request, *args, **kwargs)
 
     def get(self, reuqest):
         if type(self.get_data) is not dict or type(self.get_data) is not str:
@@ -97,12 +88,6 @@ class MethodBasedApi(APIView):
                 self.base_response['debug'].update({'exception-type': str(type(error)), 'exception-args': error.args})
             return Response(data=self.base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def get_general_function_help_usage(self, action=None):
-        if not action:
-            action = "specific" + self.function_field_name
-        help_prefix_string = self.restifiy('help prefix')
-        return {self.function_field_name: action, help_prefix_string: "specific error"}
-
     def create_base_response(self):
         if settings.DEBUG:
             return {'debug': {
@@ -126,20 +111,8 @@ class MethodBasedApi(APIView):
         try:
             out = self.call_method(data=data, method=method)
         except Exception as error:
-            key = '__all__' if action not in self.method_helpers else action
-            if key in self.method_helpers:
-                help_prefix_string = self.restifiy('help prefix')
-                help_prefix = data.get(help_prefix_string, 'general')
-                help_message = {"message": self.method_helpers[key]['help'].get(help_prefix, 'help not found'),
-                                'usage': 'specific help use {usage}'.format(
-                                    usage=self.get_general_function_help_usage(action=action)),
-                                self.restifiy('help list'): 'available help entries {helpers}'.format(
-                                    helpers=self.method_helpers[key]['help'].keys())}
-
-                additional = {"help": help_message}
-            else:
-                additional = {'error': "Exception occurred in method check function usage",
-                              self.function_field_name: action}
+            additional = {'error': "Exception occurred in method check function usage",
+                          self.function_field_name: action}
             if settings.DEBUG:
                 debug = {'exception-type': str(type(error)), 'exception-args': error.args}
 
@@ -160,7 +133,7 @@ class MethodBasedApi(APIView):
         return data
 
 
-class ModelMethodBasedApi(MethodUnPackerMixin, MethodBasedApi):
+class ModelMethodBasedApi(MethodApiUnPackerMixin, MethodBasedApi):
     api_abstraction_methods = ['__all__']
 
     # model resolver
