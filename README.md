@@ -245,3 +245,62 @@ output:
 
 # Mixins:
 
+# **MethodApiUnPackerMixin** # 
+        
+        this mixin is used to unpack json data into python variables
+        
+        for example unpacking
+        
+```json
+    {"a":"value of a", "b":"value of b"}
+```
+
+```python
+
+def test(a, b):
+    pass
+
+```
+
+        give a result of a="value of a", b="value of b"
+        
+        and the python call is
+      
+```python 
+test(a="value of a", b="value of b")
+```
+
+
+# **MethodApiHelpMixin** # 
+
+        this mixin decorate api errors with a specific or a general error
+                
+        this mixin can also display specific information about methods in the api
+        
+        see examples above.
+       
+# **DecorativeKeysMethodApi** # 
+
+        this mixin is used to allow api keys translations for example:
+        
+        without this mixin api calls can be only under the python language convention
+        
+        example:
+       
+```json
+{"action":"read_book"}
+```
+
+        using this mixin the following can be
+        
+```json
+{"action":"read_book"}
+
+{"action":"read book"}
+
+{"action":"read-book"}
+
+{"action":"read:book"}
+```
+        
+

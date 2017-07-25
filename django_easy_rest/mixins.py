@@ -87,16 +87,16 @@ class MethodApiHelpMixin(object):
 class DecorativeKeysMethodApi(object):
     separator = '-'
 
+    decorative_keys_formats = [' ', "-", ":"]
+
     def _pythonize(self, name):
         """
         make action/method name into python friendly variable.
         :param name:
         :return:
         """
-        if ' ' in name:
-            name = name.replace(' ', '_')
-        if '-' in name:
-            name = name.replace('-', "_")
+        for value in self.decorative_keys_formats:
+            name = name.replace(value, "_")
         if self.separator in name:
             name = name.replace(self.separator, '_')
         return name.lower()
@@ -107,9 +107,7 @@ class DecorativeKeysMethodApi(object):
         :param data:
         :return:
         """
-        if ' ' in data:
-            return data.replace(' ', self.separator)
+        for value in self.decorative_keys_formats:
+            return data.replace(value, self.separator)
         if '_' in data:
             return data.replace('_', self.separator)
-        if '-' in data:
-            return data.replace('-', self.separator)
