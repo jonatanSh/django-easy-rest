@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class DjangoRestTemplatesConfig(AppConfig):
-    name = 'django_rest_templates'
+class DjangoEasyRestConfig(AppConfig):
+    name = 'django_easy_rest'

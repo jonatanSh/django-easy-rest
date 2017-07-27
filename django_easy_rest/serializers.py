@@ -8,9 +8,3 @@ class FullDebuggerSerializer(object):
             if 'django.db' in str(type(data[field])):
                 data[field] = self.serialize(data[field])
         return data
-
-
-'''
-from django-easy-rest.serializers import serialize as s
-from django.contrib.auth.models import User
-'''

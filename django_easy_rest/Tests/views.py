@@ -1,8 +1,10 @@
+from django.views.generic import UpdateView
+from django.contrib.auth.models import User
 from .. import views
-from ..mixins import DecorativeKeysMethodApi, MethodApiHelpMixin
+from ..mixins import DecorativeKeys, HelpMixin, ModelUnpacker, FormPostMixin
 
 
-class MethodBased(DecorativeKeysMethodApi, MethodApiHelpMixin, views.ModelMethodBasedApi):
+class MethodBased(DecorativeKeys, HelpMixin, ModelUnpacker, views.RestApiView):
     method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
                       'super_special': {"help": {"general": "general help",
                                                  "another": "another help"}}}
@@ -28,3 +30,15 @@ class MethodBased(DecorativeKeysMethodApi, MethodApiHelpMixin, views.ModelMethod
 
     def test(self, data):
         return {"new action": "test"}
+
+    def new(self, data):
+        return {data['username']: "?"}
+
+
+class UpdateViewApi(FormPostMixin, UpdateView):
+    fields = ['email']
+    template_name = 'django_easy_rest/test.html'
+    model = User
+
+    def get_object(self, queryset=None):
+        return User.objects.get(pk=1)

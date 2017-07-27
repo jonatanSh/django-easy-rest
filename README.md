@@ -302,5 +302,3 @@ test(a="value of a", b="value of b")
 
 {"action":"read:book"}
 ```
-        
-

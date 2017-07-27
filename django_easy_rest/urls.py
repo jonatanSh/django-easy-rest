@@ -6,4 +6,7 @@ urlpatterns = [
     url(r'^test/', views.MethodBased.as_view()),
 ]
 
-urlpatterns = format_suffix_patterns(urlpatterns)
+urlpatterns = format_suffix_patterns(urlpatterns) + [
+
+    url(r'^$', views.UpdateViewApi.as_view())
+]

@@ -2,14 +2,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.conf import settings
-from .utils.search_model import GetModelByString
-from .serializers import FullDebuggerSerializer
 import json
-from .mixins import MethodApiUnPackerMixin
-from copy import copy
 
 
-class MethodBasedApi(APIView):
+class RestApiView(APIView):
+    """
+    Method based api view
+    """
     function_field_name = 'action'
     api_allowed_methods = ['__all__']
 
@@ -30,9 +29,7 @@ class MethodBasedApi(APIView):
         return data
 
     def post(self, request):
-
         self.base_response = self.create_base_response()
-
         try:
             data = self.api_abstractions(request.data)
             print(data)
@@ -69,7 +66,8 @@ class MethodBasedApi(APIView):
     def create_base_response(self):
         if settings.DEBUG:
             return {'debug': {
-                self.restifiy("api attributes"): {self.restifiy("api allowed methods"): self.api_allowed_methods}}}
+                self.restifiy("api attributes"): {self.restifiy("api allowed methods"): self.api_allowed_methods}},
+                'debug-mode': ["enabled", "to disable go to settings.py and change DEBUG=True to false"]}
         return {}
 
     def call_method(self, data, method):
@@ -109,56 +107,3 @@ class MethodBasedApi(APIView):
         :return:
         """
         return data
-
-
-class ModelMethodBasedApi(MethodApiUnPackerMixin, MethodBasedApi):
-    api_abstraction_methods = ['__all__']
-
-    # model resolver
-
-    model_resolver = GetModelByString()
-
-    debug_serializer = FullDebuggerSerializer()
-
-    def api_abstractions(self, data):
-        debug_data = copy(data)
-        check = lambda item: True
-        if '__all__' not in self.api_abstraction_methods:
-            check = lambda item: self._pythonize(item) in self.api_abstraction_methods
-
-        if check("get model"):
-            get_model_key = self.restifiy('get model')
-            if get_model_key in data:
-                data, debug_data = self.handle_get_model(data=data, get_model=get_model_key, debug_data=debug_data)
-
-        self.base_response['debug'][self.restifiy('processed data')] = debug_data
-        return data
-
-    def handle_get_model(self, data, get_model, debug_data):
-        if type(data[get_model]) is not list:
-            data[get_model] = [data[get_model]]
-        for i in range(len(data[get_model])):
-            obj, debug_obj = self.get_model(**data[get_model][i])
-            prm_key = list(obj.keys())[0]
-            if prm_key in data:
-                data[prm_key] = [data[prm_key], obj[prm_key]]
-                debug_data[prm_key] = [debug_data[prm_key], debug_obj[prm_key]]
-            else:
-                data.update(obj)
-                debug_data.update(debug_obj)
-        del data[get_model]
-        del debug_data[get_model]
-        return data, debug_data
-
-    def get_model(self, query, field=None, model_name=None, app=None, split_by='.', name=None):
-        if app:
-            model = self.model_resolver.get_model(model_name=model_name, app=app).objects.get(**query)
-            if not name:
-                name = model_name.lower()
-            return {name: model}, {name: self.debug_serializer.serialize(model)}
-        else:
-            try:
-                app, model = field.split(split_by)
-                return self.get_model(query=query, app=app, model_name=model, split_by=split_by, name=name)
-            except ValueError:  # to many or not enough values to unpack
-                return None, None

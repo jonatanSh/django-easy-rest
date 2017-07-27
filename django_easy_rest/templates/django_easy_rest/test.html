@@ -1,0 +1,13 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="{% static 'jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'Request.js' %}"></script>
+    <script src="{% static 'Submit.js' %}"></script>
+
+</head>
+<body>
+{% include "django_easy_rest/rest_api_form.html" with form=form %}
+</body>
+</html>
