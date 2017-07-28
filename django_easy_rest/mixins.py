@@ -185,23 +185,39 @@ class FormPostMixin(object):
     this mixin supports django GCBV and make posts using a rest api
     """
 
+    def __init__(self, *args, **kwargs):
+        super(FormPostMixin, self).__init__(*args, **kwargs)
+        self.create_view_names = [
+            "<class 'django.views.generic.edit.CreateView'>"
+        ]
+
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-        if request.method.lower() in self.http_method_names:
-            handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
-        else:
-            handler = self.http_method_not_allowed
-        return handler(request, *args, **kwargs)
+        return super(FormPostMixin, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        response = {}
+        """
+        this is the generic rest api post
+        :param request: the WSGI request object
+        :param args: additional args
+        :param kwargs: additional kwargs
+
+        :return:
+        """
+        chain = [str(class_name) for class_name in self.__class__.__bases__]
+        if bool(set(chain) & set(self.create_view_names)):
+            self.object = None
+        else:
+            # this raises an exception when there are no pk or slug.
+            self.object = self.get_object()
+
         form = self.get_form()
-        self.object = self.get_object()
-        print(form.__dict__)
         if form.is_valid():
             response = {"status": "post-success"}
+            form.save()
         else:
             response = {"status": "post-failure",
                         "form_cleaned_data": form.cleaned_data,
                         "form_errors": form.errors}
+
         return HttpResponse(json.dumps(response))

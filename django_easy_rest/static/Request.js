@@ -7,13 +7,12 @@ function RequestHandler(url) {
      */
     this.SendSync = function (data) {
         let ajax_response = undefined;
-        let dataToSend = JSON.stringify(data);
         $.ajax(
             {
                 async: false,
                 url: this.url,
                 type: 'POST',
-                data: dataToSend,
+                data: data,
                 headers: {"X-CSRFToken": getCsrf()},
 
                 success: function (jsonResponse) {
@@ -32,13 +31,13 @@ function RequestHandler(url) {
 
     this.SendAsync = function (data, OnSuccess, OnError = function (error) {
     }) {
-        let dataToSend = JSON.stringify(data);
+
         $.ajax(
             {
                 async: true,
                 url: this.url,
                 type: 'POST',
-                data: dataToSend,
+                data: data,
                 headers: {"X-CSRFToken": getCsrf()},
 
                 success: OnSuccess,

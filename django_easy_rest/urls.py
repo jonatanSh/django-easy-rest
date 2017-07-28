@@ -8,5 +8,7 @@ urlpatterns = [
 
 urlpatterns = format_suffix_patterns(urlpatterns) + [
 
-    url(r'^$', views.UpdateViewApi.as_view())
+    url(r'^update', views.UpdateViewApi.as_view()),
+    url(r'^create', views.CreateViewApi.as_view()),
+
 ]

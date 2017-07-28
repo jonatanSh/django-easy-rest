@@ -1,3 +1,7 @@
 from django.db import models
 
-# Create your models here.
+
+class TestModel(models.Model):
+    integer = models.IntegerField(default=2)
+
+    name = models.CharField(max_length=44, default="name")

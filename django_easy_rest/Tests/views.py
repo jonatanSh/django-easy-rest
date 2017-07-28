@@ -1,5 +1,6 @@
-from django.views.generic import UpdateView
-from django.contrib.auth.models import User
+from django.views.generic import UpdateView, CreateView
+
+from ..models import TestModel
 from .. import views
 from ..mixins import DecorativeKeys, HelpMixin, ModelUnpacker, FormPostMixin
 
@@ -36,9 +37,15 @@ class MethodBased(DecorativeKeys, HelpMixin, ModelUnpacker, views.RestApiView):
 
 
 class UpdateViewApi(FormPostMixin, UpdateView):
-    fields = ['email']
+    fields = ['name', 'integer']
     template_name = 'django_easy_rest/test.html'
-    model = User
+    model = TestModel
 
     def get_object(self, queryset=None):
-        return User.objects.get(pk=1)
+        return TestModel.objects.get(pk=1)
+
+
+class CreateViewApi(FormPostMixin, CreateView):
+    template_name = 'django_easy_rest/test.html'
+    model = TestModel
+    fields = ['name', 'integer']
