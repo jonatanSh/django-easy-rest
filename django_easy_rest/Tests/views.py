@@ -37,7 +37,7 @@ class MethodBased(DecorativeKeysMixin, HelpMixin, ModelUnpacker, views.RestApiVi
 
 
 class UpdateViewApi(FormPostMixin, UpdateView):
-    fields = ['name', 'integer']
+    fields = ['first_name', 'last_name']
     template_name = 'django_easy_rest/test.html'
     model = User
     success_message = 'model has been changed {}'.format(datetime.now())
@@ -49,4 +49,4 @@ class UpdateViewApi(FormPostMixin, UpdateView):
 class CreateViewApi(FormPostMixin, CreateView):
     template_name = 'django_easy_rest/test.html'
     model = User
-    fields = ['name', 'integer']
+    fields = ['username', 'email', 'password']
