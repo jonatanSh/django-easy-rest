@@ -1,6 +1,6 @@
 from django.views.generic import UpdateView, CreateView
-
-from ..models import TestModel
+from datetime import datetime
+from django.contrib.auth.models import User
 from .. import views
 from ..mixins import DecorativeKeysMixin, HelpMixin, ModelUnpacker, FormPostMixin
 
@@ -39,14 +39,14 @@ class MethodBased(DecorativeKeysMixin, HelpMixin, ModelUnpacker, views.RestApiVi
 class UpdateViewApi(FormPostMixin, UpdateView):
     fields = ['name', 'integer']
     template_name = 'django_easy_rest/test.html'
-    model = TestModel
-    success_message = 'yay'
+    model = User
+    success_message = 'model has been changed {}'.format(datetime.now())
 
     def get_object(self, queryset=None):
-        return TestModel.objects.get(pk=1)
+        return User.objects.get(pk=1)
 
 
 class CreateViewApi(FormPostMixin, CreateView):
     template_name = 'django_easy_rest/test.html'
-    model = TestModel
+    model = User
     fields = ['name', 'integer']
