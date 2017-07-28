@@ -11,28 +11,36 @@ class MethodBased(DecorativeKeysMixin, HelpMixin, ModelUnpacker, views.RestApiVi
                                                  "another": "another help"}}}
     api_allowed_methods = ['__all__']
 
-    def correct(self, data):
-        return {"test": "test"}
+    @staticmethod
+    def echo(data):
+        return data
 
-    def error(self, data):
+    @staticmethod
+    def error(data):
         return 1 / 0
 
-    def special_error(self, data):
+    @staticmethod
+    def special_error(data):
         return 1 / 0
 
-    def super_special(self, data):
+    @staticmethod
+    def super_special(data):
         return 1 / 0
 
-    def two_parms(self, a, b):
+    @staticmethod
+    def two_parms(a, b):
         return {"a---": a, "-b-": b}
 
-    def get_username(self, user):
+    @staticmethod
+    def get_username(user):
         return {"username": user.username}
 
-    def test(self, data):
+    @staticmethod
+    def test(data):
         return {"new action": "test"}
 
-    def new(self, data):
+    @staticmethod
+    def new(data):
         return {data['username']: "?"}
 
 
@@ -50,3 +58,4 @@ class CreateViewApi(FormPostMixin, CreateView):
     template_name = 'django_easy_rest/test.html'
     model = User
     fields = ['username', 'email', 'password']
+    success_message = 'user created {}'.format(datetime.now())
