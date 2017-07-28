@@ -214,6 +214,9 @@ class FormPostMixin(object):
         form = self.get_form()
         if form.is_valid():
             response = {"status": "post-success"}
+            success_message = self._get_value('success_message')
+            if success_message:
+                response['alert'] = {'type': 'success', 'message': success_message}
             form.save()
         else:
             response = {"status": "post-failure",
@@ -221,3 +224,7 @@ class FormPostMixin(object):
                         "form_errors": form.errors}
 
         return HttpResponse(json.dumps(response))
+
+    def _get_value(self, name):
+        if hasattr(self, name):
+            return getattr(self, name)

@@ -40,6 +40,7 @@ class UpdateViewApi(FormPostMixin, UpdateView):
     fields = ['name', 'integer']
     template_name = 'django_easy_rest/test.html'
     model = TestModel
+    success_message = 'yay'
 
     def get_object(self, queryset=None):
         return TestModel.objects.get(pk=1)
