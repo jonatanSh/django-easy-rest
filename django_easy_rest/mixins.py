@@ -270,40 +270,82 @@ class ApiAbstractionsMixin(object):
 
 class ModelUnpacker(ApiAbstractionsMixin, FunctionUnPackerMixin):
     """
-    The model api
+    unpacks a model into a function on post
     """
 
     def __init__(self, *args, **kwargs):
         super(ModelUnpacker, self).__init__(*args, **kwargs)
-        self.abstractions_bind['get model'] = self.handle_get_model
+        # binding the main function into the command "with-model"
+        self.abstractions_bind['with model'] = self.handle_get_model
 
+    # the model resolver gets a model from app by name
     model_resolver = GetModelByString()
 
+    # debug serializer is used for serializing the model on debug
     debug_serializer = FullDebuggerSerializer()
 
     def handle_get_model(self, data, real_key, debug_data):
+        """
+        returns the real model when processed
+        :param data: the data before processing
+        :param real_key: the key in data to refer to
+        :param debug_data: the debug data to append to
+        :return: processed data, debug_data
+        """
+        # get model supports many models checking if there are many models
         if type(data[real_key]) is not list:
+            # converting the when item into list
             data[real_key] = [data[real_key]]
+        # iterating over the models to get list
         for i in range(len(data[real_key])):
+            # getting the model
             obj, debug_obj = self.get_model(**data[real_key][i])
+            # saving the model primary key in request
             prm_key = list(obj.keys())[0]
+
+            # if this pk in data
             if prm_key in data:
+                # data in pk is real model
                 data[prm_key] = [data[prm_key], obj[prm_key]]
-                debug_data[prm_key] = [debug_data[prm_key], debug_obj[prm_key]]
+
+                if settings.DEBUG:
+                    # debug data is serialized model data
+                    debug_data[prm_key] = [debug_data[prm_key], debug_obj[prm_key]]
             else:
+                # many models
                 data.update(obj)
+                # many models
                 debug_data.update(debug_obj)
+        # removing old key
         del data[real_key]
+        # removing old debug data
         del debug_data[real_key]
+        # returning data
         return data, debug_data
 
     def get_model(self, query, field=None, model_name=None, app=None, split_by='.', name=None):
+        """
+        returns the model specified in function arguments
+        :param query: the query to use when getting the model
+        :param field: the filed to search by [App.ModelName]
+        :param model_name: the model name
+        :param app: the app to search in
+        :param split_by: the parameter the splits the app and the model in field
+        :param name: the model return name
+        :return: real model
+        """
+        # if app is known
         if app:
+            # returning the model by the app and model name and get it by query
             model = self.model_resolver.get_model(model_name=model_name, app=app).objects.get(**query)
+            # if no returns name specified
             if not name:
+                # returning by model name to lower
                 name = model_name.lower()
+            # returns the model
             return {name: model}, {name: self.debug_serializer.serialize(model)}
         else:
+            # try handling field split
             try:
                 app, model = field.split(split_by)
                 return self.get_model(query=query, app=app, model_name=model, split_by=split_by, name=name)
@@ -311,9 +353,9 @@ class ModelUnpacker(ApiAbstractionsMixin, FunctionUnPackerMixin):
                 return None, None
 
 
-class FormPostMixin(object):
+class FormPostMixin(Resolver):
     """
-    this mixin supports django GCBV and make posts using a rest api
+    this mixin supports django GCBV and make posts a rest api post
     """
 
     def __init__(self, *args, **kwargs):
@@ -335,23 +377,35 @@ class FormPostMixin(object):
 
         :return:
         """
+        # class inheritance chain
         chain = [str(class_name) for class_name in self.__class__.__bases__]
+
+        # checking for same values in lists
         if bool(set(chain) & set(self.create_view_names)):
+            # sets the request object to none
             self.object = None
         else:
             # this raises an exception when there are no pk or slug.
             self.object = self.get_object()
-
+        # getting the post form
         form = self.get_form()
+        # if form was valid
         if form.is_valid():
+            # creating the response object
             response = {"status": "post-success"}
+
+            # if form should generate an alert trying to get the message
             success_message = self._get_value('success_message')
+
+            # notifying client to alert
             if success_message:
                 response['alert'] = {'type': 'success', 'message': success_message}
+            # saving the form (the model)
             form.save()
         else:
+            # handling error response
             response = {"status": "post-failure",
                         "form_cleaned_data": form.cleaned_data,
                         "form_errors": form.errors}
-
+        # returning the http response
         return HttpResponse(json.dumps(response))

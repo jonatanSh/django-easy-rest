@@ -2,10 +2,10 @@ from django.views.generic import UpdateView, CreateView
 
 from ..models import TestModel
 from .. import views
-from ..mixins import DecorativeKeys, HelpMixin, ModelUnpacker, FormPostMixin
+from ..mixins import DecorativeKeysMixin, HelpMixin, ModelUnpacker, FormPostMixin
 
 
-class MethodBased(DecorativeKeys, HelpMixin, ModelUnpacker, views.RestApiView):
+class MethodBased(DecorativeKeysMixin, HelpMixin, ModelUnpacker, views.RestApiView):
     method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
                       'super_special': {"help": {"general": "general help",
                                                  "another": "another help"}}}
