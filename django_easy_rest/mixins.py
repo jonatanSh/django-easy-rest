@@ -1,45 +1,109 @@
 from copy import copy
-
-from django.conf import settings
-from django.http import HttpResponse
-
-from django_easy_rest.serializers import FullDebuggerSerializer
-from django_easy_rest.utils.search_model import GetModelByString
 from django.views.decorators.csrf import csrf_exempt
+from django_easy_rest.serializers import FullDebuggerSerializer
+from django.http import HttpResponse
+from django_easy_rest.utils.search_model import GetModelByString
 import json
+from django.conf import settings
 
 
-class FunctionUnPackerMixin(object):
+class Resolver(object):
+    """
+    the resolver resolve attribute set, get and method calling
+    this is used in order to have a nice clean code in ide.
+    """
+
+    def _get_value(self, name, default=None):
+        """
+        returns the variable value if exists else default
+        :param name: the variable name
+        :param default: default value
+        :return: variable value if exists else default
+        """
+        if hasattr(self, name):
+            return getattr(self, name)
+        return default
+
+    def _set_value(self, name, value):
+        """
+        settings a value of variable
+        :param name: the variable name
+        :param value: the value to set
+        :return: True if succeeded else false
+        :rtype: bool
+        """
+        if hasattr(self, name):
+            setattr(self, name, value)
+            return True
+        return False
+
+    def _call(self, name, **kwargs):
+        """
+        Calling a function
+        :param name: function name
+        :param kwargs: kwargs to use when calling
+        :return: function output if there is one else None
+        """
+        if hasattr(self, name):
+            return getattr(self, name)(**kwargs)
+
+
+class FunctionUnPackerMixin(Resolver):
     """
     This mixin handles the unpacking of variables into functions
 
     Example: unpacks {'a':'value of a', 'b':'value of b'} results in function(a='value of a', b='value of b')
     """
 
-    @staticmethod
-    def prepare_function_data(data, method=None, append_data=None):
+    def prepare_function_data(self, data, method=None, append_data=None):
+        """
+        prepare data into a new dictionary
+        :param data: data to prepare
+        :param method: method the method latter to call
+        :param append_data: append_data data to append at call
+        :return: prepared data
+        :rtype: dict
+        """
+        # packed if any data got packed
+        packed = False
+        # the prepared data
         prepared_data = {}
-        if append_data is None:
-            append_data = {}
+        # default value for append_data because default parameters should be runtime const
+        append_data = append_data if append_data else {}
+
+        # if method is none then can't prepare the parameters because there are no function argument
         if not method:
-            prepared_data = {"data": data}
+            prepared_data = {self._get_value("default_parameter", 'data'): data}
         else:
+            # get function variable names.
             keys = list(method.__code__.co_varnames)
+            # removing self from variables if self in variables because the call is self.call
             if 'self' in keys:
                 keys.remove('self')
-            if not keys:
-                keys = []
-            unpacked = False
+            # if there are no keys
+            keys = [] if not keys else keys
             for key in keys:
+                # if data has this key
                 if key in data:
-                    unpacked = True
+                    # then pack was successful
+                    packed = True
+                    # packing the variable
                     prepared_data[key] = data[key]
-            if not unpacked:
+            # trying to set the first parameter to all data
+            if not packed:
                 prepared_data = {keys[0]: data}
+        # update prepared data to append data
         prepared_data.update(append_data)
+        # returning the prepared data.
         return prepared_data
 
     def call_method(self, data, method):
+        """
+        Calls the method with the prepared data
+        :param data: prepared data
+        :param method: method to call
+        :return: method out put
+        """
         return method(**self.prepare_function_data(data=data, method=method, append_data=None))
 
 
@@ -51,63 +115,97 @@ class HelpMixin(object):
     method_helpers = {'__all__': {"help": {"general": "this is a special message"}}}
 
     def __init__(self, *args, **kwargs):
+        super(HelpMixin, self).__init__(*args, **kwargs)
         self.general_help_string.format(usage=self.get_general_function_help_usage())
 
     def get_general_function_help_usage(self, action=None):
-        if not action:
-            action = "specific" + self.function_field_name
+        """
+        this functions returns the general help message by the action
+        :param action: action to return message using
+        :return: help usage
+        :rtype dict
+        """
+        # if there is no action
+        action = "specific" + self.function_field_name if not action else action
+        # creating help prefix
         help_prefix_string = self.restifiy('help prefix')
         return {self.function_field_name: action, help_prefix_string: "specific error"}
 
     def _method_wrapper(self, data, method, action):
         """
-
+        the method wraper is used in order to wrap the method call
         :param data: request.data (dict)
         :param method: method to call inside api (object)
         :param action: action name (str)
-        :return: function data, debug, error [type = Bool]
+        :return: function data, debug, error
+        :rtype bool
         """
+        # value of method out
         out = None
+        # additional values
         additional = None
+        # debug dictionary
         debug = {}
+
+        # trying to call the method
         try:
             out = self.call_method(data=data, method=method)
+
+        # excepting any exception when calling
         except Exception as error:
+            # key is used to check if this method has helper are use global
             key = '__all__' if action not in self.method_helpers else action
+
+            # if this method does have an helper
             if key in self.method_helpers:
+                # the key of prefix
                 help_prefix_string = self.restifiy('help prefix')
+                # the prefix to use when searching default general
                 help_prefix = data.get(help_prefix_string, 'general')
+                # the returned help message
                 help_message = {"message": self.method_helpers[key]['help'].get(help_prefix, 'help not found'),
                                 'usage': 'specific help use {usage}'.format(
                                     usage=self.get_general_function_help_usage(action=action)),
                                 self.restifiy('help list'): 'available help entries {helpers}'.format(
                                     helpers=self.method_helpers[key]['help'].keys())}
-
+                # sets the additional text
                 additional = {"help": help_message}
             else:
+                # sets the additional text differently
                 additional = {'error': "Exception occurred in method check function usage",
                               self.function_field_name: action}
+            # adding debug info
             if settings.DEBUG:
                 debug = {'exception-type': str(type(error)), 'exception-args': error.args}
 
+        # deciding what to return
         if additional:
             return additional, debug, True
         if out:
             return out, debug, False
+        # if there is no additional and no out.
         if settings.DEBUG:
             return {}, {"error": '{} did not return any data'.format(self.function_field_name)}, True
 
 
-class DecorativeKeys(object):
+class DecorativeKeysMixin(object):
+    """
+    The decorative keys mixin make the rest api more usable with
+    any key separation
+    """
+
+    # the decorative keys separator (default)
     separator = '-'
 
+    # the allowed formats
     decorative_keys_formats = [' ', "-", ":"]
 
     def _pythonize(self, name):
         """
         make action/method name into python friendly variable.
-        :param name:
-        :return:
+        :param name: the original name
+        :return: python friendly variable/method
+        :rtype: str
         """
         for value in self.decorative_keys_formats:
             name = name.replace(value, "_")
@@ -117,9 +215,10 @@ class DecorativeKeys(object):
 
     def restifiy(self, data):
         """
-        Created a rest item key.
-        :param data:
-        :return:
+        the restifiy method returns a current rest decorative key
+        :param data: the data to create a key from
+        :return: current rest key
+        :rtype: str
         """
         for value in self.decorative_keys_formats:
             return data.replace(value, self.separator)
@@ -127,34 +226,66 @@ class DecorativeKeys(object):
             return data.replace('_', self.separator)
 
 
-class ModelUnpacker(FunctionUnPackerMixin):
+class ApiAbstractionsMixin(object):
+    """
+    the api abstraction mixin allowed to add api middle way abstractions
+    """
+    # all abstracted allowed methods
     api_abstraction_methods = ['__all__']
 
-    # model resolver
+    # api methods and binds
+    abstractions_bind = {}
+
+    # the main abstraction method
+    def api_abstractions(self, data):
+        """
+        get the request data and returns the processed data
+        :param data: request data
+        :return: processed data
+        """
+
+        # debug data is a copy of data
+        debug_data = {} if not settings.DEBUG else copy(data)
+
+        # check if an item is allowed in the api_abstraction_methods
+        check = lambda item: True
+        if '__all__' not in self.api_abstraction_methods:
+            # testing the abstraction
+            check = lambda item: self._pythonize(item) in self.api_abstraction_methods
+
+        # iterating over all binded methods
+        for key in self.abstractions_bind:
+            # checking if method is allowed
+            if check(key):
+                # getting the real key
+                real_key = self.restifiy(key)
+                # if real key in data calling the binded function
+                if real_key in data:
+                    # making the call
+                    data, debug_data = self.abstractions_bind[key](data=data, debug_data=debug_data, real_key=real_key)
+
+        self.base_response['debug'][self.restifiy('processed data')] = debug_data
+        return data
+
+
+class ModelUnpacker(ApiAbstractionsMixin, FunctionUnPackerMixin):
+    """
+    The model api
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ModelUnpacker, self).__init__(*args, **kwargs)
+        self.abstractions_bind['get model'] = self.handle_get_model
 
     model_resolver = GetModelByString()
 
     debug_serializer = FullDebuggerSerializer()
 
-    def api_abstractions(self, data):
-        debug_data = copy(data)
-        check = lambda item: True
-        if '__all__' not in self.api_abstraction_methods:
-            check = lambda item: self._pythonize(item) in self.api_abstraction_methods
-
-        if check("get model"):
-            get_model_key = self.restifiy('get model')
-            if get_model_key in data:
-                data, debug_data = self.handle_get_model(data=data, get_model=get_model_key, debug_data=debug_data)
-
-        self.base_response['debug'][self.restifiy('processed data')] = debug_data
-        return data
-
-    def handle_get_model(self, data, get_model, debug_data):
-        if type(data[get_model]) is not list:
-            data[get_model] = [data[get_model]]
-        for i in range(len(data[get_model])):
-            obj, debug_obj = self.get_model(**data[get_model][i])
+    def handle_get_model(self, data, real_key, debug_data):
+        if type(data[real_key]) is not list:
+            data[real_key] = [data[real_key]]
+        for i in range(len(data[real_key])):
+            obj, debug_obj = self.get_model(**data[real_key][i])
             prm_key = list(obj.keys())[0]
             if prm_key in data:
                 data[prm_key] = [data[prm_key], obj[prm_key]]
@@ -162,8 +293,8 @@ class ModelUnpacker(FunctionUnPackerMixin):
             else:
                 data.update(obj)
                 debug_data.update(debug_obj)
-        del data[get_model]
-        del debug_data[get_model]
+        del data[real_key]
+        del debug_data[real_key]
         return data, debug_data
 
     def get_model(self, query, field=None, model_name=None, app=None, split_by='.', name=None):
@@ -224,7 +355,3 @@ class FormPostMixin(object):
                         "form_errors": form.errors}
 
         return HttpResponse(json.dumps(response))
-
-    def _get_value(self, name):
-        if hasattr(self, name):
-            return getattr(self, name)
