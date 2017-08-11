@@ -16,13 +16,19 @@ else:
     load_message = '<!--{0}-->\n<script>console.warn("{0}")</script>'.format(
         "EASY_REST_ROOT_URL not specified in settings defaulting with easy_rest ")
 
+# js base html
 js_base = '<script src="' + root + '/{}"></script>'
 
+# css base html
 css_base = '<link rel="stylesheet" href="' + root + '/{}">'
 
 
 @register.simple_tag()
 def load_rest_scripts():
+    """
+    loads only easy rest scripts
+    :return: html with the scripts
+    """
     data = _get_rest_scripts()
     if load_message:
         data = load_message + "\n" + data
@@ -31,6 +37,10 @@ def load_rest_scripts():
 
 @register.simple_tag()
 def load_rest_all():
+    """
+    load rest scripts along with bootstrap
+    :return: html including bootstrap and rest scripts
+    """
     data = _get_rest_scripts() + _get_bootstrap()
     if load_message:
         data = load_message + "\n" + data
@@ -38,6 +48,9 @@ def load_rest_all():
 
 
 def _get_rest_scripts():
+    """
+    :return: html scripts
+    """
     files = [
         'jquery-3.2.1.min.js',
         'Request.js',
@@ -50,6 +63,9 @@ def _get_rest_scripts():
 
 
 def _get_bootstrap():
+    """
+    :return: html scripts
+    """
     files = [
         'bootstrap.css',
         'bootstrap-grid.css',
