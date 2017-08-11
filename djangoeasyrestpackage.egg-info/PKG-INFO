@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: djangoeasyrestpackage
-Version: 0.1
+Version: 0.2
 Summary: A simple Django app to create rest applications
 Home-page: https://github.com/jonatanSh/django-easy-rest/
 Author: Jonathan Shimon
