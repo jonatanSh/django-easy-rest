@@ -1,8 +1,8 @@
 from copy import copy
 from django.views.decorators.csrf import csrf_exempt
-from django_easy_rest.serializers import FullDebuggerSerializer
+from easy_rest.serializers import FullDebuggerSerializer
 from django.http import HttpResponse
-from django_easy_rest.utils.search_model import GetModelByString
+from easy_rest.utils.search_model import GetModelByString
 import json
 from django.conf import settings
 

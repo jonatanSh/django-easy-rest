@@ -16,9 +16,10 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.conf.urls import include
+from django.conf import settings
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^django-easy-rest/', include('django_easy_rest.urls', namespace='rest_templates')),
+    url(r'^' + settings.EASY_REST_ROOT_URL + '/', include('easy_rest.urls', namespace='rest_templates')),
 ]

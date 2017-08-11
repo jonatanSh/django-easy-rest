@@ -24,8 +24,8 @@ views.py
 
 ```python
 
-from django_easy_rest import views
-from django_easy_rest.mixins import MethodApiHelpMixin,DecorativeKeysMethodApi
+from easy_rest import views
+from easy_rest.mixins import MethodApiHelpMixin,DecorativeKeysMethodApi
 
 class MethodBased(MethodApiHelpMixin,DecorativeKeysMethodApi, views.ModelMethodBasedApi):
     def get_username(self, user):
@@ -104,8 +104,8 @@ views.py
 ```python
 
 
-from django_easy_rest import views
-from django_easy_rest.mixins import MethodApiHelpMixin,MethodApiUnPackerMixin
+from easy_rest import views
+from easy_rest.mixins import MethodApiHelpMixin,MethodApiUnPackerMixin
 
 
 class MethodBased(MethodApiUnPackerMixin,MethodApiHelpMixin,DecorativeKeysMethodApi,views.MethodBasedApi):
@@ -136,7 +136,7 @@ urls.py
 ```python
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from django_easy_rest import views
+from easy_rest import views
 
 urlpatterns = [
     url(r'^test/', views.MethodBased.as_view()),

@@ -27,4 +27,4 @@ class ValidateLoading(object):
 
 class DjangoEasyRestConfig(AppConfig):
     ValidateLoading().validate()
-    name = 'django_easy_rest'
+    name = 'easy_rest'

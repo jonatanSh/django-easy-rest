@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'django_easy_rest'
+    'easy_rest'
 ]
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -116,10 +116,12 @@ USE_L10N = True
 
 USE_TZ = True
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "django_easy_rest", "static"),
+    os.path.join(BASE_DIR, "easy_rest", "static"),
 ]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+EASY_REST_ROOT_URL = 'easy_rest'
