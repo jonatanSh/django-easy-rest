@@ -9,19 +9,20 @@ and to integrate rest apps with existing apps
 
 Quick start
 -----------
+1. install go to /build/dist/ and run pip install django-easy-rest-0.1
 
-1. Add "easy_rest" to your INSTALLED_APPS setting like this::
+2. Add "easy_rest" to your INSTALLED_APPS setting like this::
 
     INSTALLED_APPS = [
         ...
         'easy_rest',
     ]
 
-2. Include the easy_rest URLconf in your project urls.py like this::
+3. Include the easy_rest URLconf in your project urls.py like this::
 
     url(r'^easy_rest/', include('easy_rest.urls')),
 
-3. Configure the url root of easy rest in your project settings.py like this::
+4. Configure the url root of easy rest in your project settings.py like this::
 
     EASY_REST_ROOT_URL = "easy_rest"
 
