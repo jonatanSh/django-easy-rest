@@ -166,7 +166,42 @@ the output is:
     }
 ```
 
+# Integrating rest with django GCBV:
 
+The following example is django GCBV update view with a rest post
+
+views.py:
+
+```python
+
+class UpdateViewApi(FormPostMixin, UpdateView):
+    fields = ['first_name', 'last_name']
+    template_name = 'easy_rest/test.html'
+    model = User
+    success_message = 'model has been changed {}'.format(datetime.now())
+
+    def get_object(self, queryset=None):
+        return User.objects.get(pk=1)
+
+```
+
+template 
+
+```html
+{% load easy_rest %}
+<html lang="en">
+<head>
+{% load_rest_all %}
+</head>
+<body>
+{% include "easy_rest/easy_rest_form.html" with form=form %}
+</body>
+</html>
+```
+
+That's it now the easy rest will make the form post rest,
+
+the easy rest also adds success message of post and it places form errors above the form fields.
 
 # Mixins:
 
