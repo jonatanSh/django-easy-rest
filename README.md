@@ -9,7 +9,7 @@ and to integrate rest apps with existing apps
 
 Quick start
 -----------
-1. install go to /build/dist/ and run pip install django-easy-rest-0.1
+1. install go to /build/dist/ and run pip install easy_rest-0.1-py3-none-any.whl
 
 2. Add "easy_rest" to your INSTALLED_APPS setting like this::
 

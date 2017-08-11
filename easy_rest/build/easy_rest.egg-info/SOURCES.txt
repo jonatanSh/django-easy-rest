@@ -1,8 +1,0 @@
-MANIFEST.in
-setup.py
-easy_rest.egg-info/PKG-INFO
-easy_rest.egg-info/SOURCES.txt
-easy_rest.egg-info/dependency_links.txt
-easy_rest.egg-info/top_level.txt
-utils/__init__.py
-utils/search_model.py
