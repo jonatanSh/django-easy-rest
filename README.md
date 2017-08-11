@@ -1,6 +1,6 @@
-=====
-EASY REST
-=====
+
+# EASY REST
+
 
 
 Easy rest framework is built under django rest framework.
