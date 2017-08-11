@@ -1,10 +1,31 @@
-# Django easy rest:
+=====
+EASY REST
+=====
+
 
 Easy rest framework is built under django rest framework.
 
-The easy rest addes many useful mixins, and make it very easy to create rest apps 
+The easy rest adds many useful mixins, and make it very easy to create rest apps
 
 and to integrate rest apps with existing apps
+
+Quick start
+-----------
+
+1. Add "easy_rest" to your INSTALLED_APPS setting like this::
+
+    INSTALLED_APPS = [
+        ...
+        'easy_rest',
+    ]
+
+2. Include the easy_rest URLconf in your project urls.py like this::
+
+    url(r'^easy_rest/', include('easy_rest.urls')),
+
+3. Configure the url root of easy rest in your project settings.py like this::
+
+    EASY_REST_ROOT_URL = "easy_rest"
 
 # easy rest mixins:
 
@@ -29,6 +50,7 @@ and to integrate rest apps with existing apps
 1. {% load_rest_scripts %}
 
 2. {% load_rest_all %}
+
 
 # example of the rest view:
 
