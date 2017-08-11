@@ -109,6 +109,7 @@ class FunctionUnPackerMixin(Resolver):
 
 class HelpMixin(object):
     """
+    Add help for the api methods
     All fields initialized after inheritance
     """
     general_help_string = 'for function summary use: {usage}'
