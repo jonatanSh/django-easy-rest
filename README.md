@@ -1,8 +1,6 @@
 
 # EASY REST
 
-
-
 Easy rest framework is built under django rest framework.
 
 The easy rest adds many useful mixins, and make it very easy to create rest apps
