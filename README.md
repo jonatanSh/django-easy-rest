@@ -1,24 +1,44 @@
 # Django easy rest:
 
-django easy rest is built under django rest framework 
+Easy rest framework is built under django rest framework.
 
-the easy rest does everything as simple as it gets
+The easy rest addes many useful mixins, and make it very easy to create rest apps 
 
-as you can see in the following examples:
+and to integrate rest apps with existing apps
 
-# Examples:
+# easy rest mixins:
 
-first the easy rest unpackers:
+1. ApiAbstractionsMixin
 
-# Easy rest unpackers:
+2. DecorativeKeysMixin
 
-unpacks the data into python variables it features:
+3. HelpMixin
 
-1. model unpacking (searching for the right model/s by name and unpack it)
+4. FormPostMixin
 
-2. variables unpacking
+5. FunctionUnPackerMixin 
 
-# Example
+6. ModelUnpacker 
+
+# easy rest views:
+
+1. RestApiView
+
+# easy rest template-tags:
+
+1. {% load_rest_scripts %}
+
+2. {% load_rest_all %}
+
+# example of the rest view:
+
+In this example you are going to learn how to write 
+
+class based view using the rest mixin.
+
+This example also shows the power of the easy rest
+
+# Code:
 
 views.py
 
@@ -27,14 +47,32 @@ views.py
 from easy_rest import views
 from easy_rest.mixins import MethodApiHelpMixin,DecorativeKeysMethodApi
 
-class MethodBased(MethodApiHelpMixin,DecorativeKeysMethodApi, views.ModelMethodBasedApi):
+class MethodBased(HelpMixin, DecorativeKeysMixin, FunctionUnPackerMixin, ModelUnpacker, views.RestApiView):
+   method_helpers = {'get_username': {"help": {"general": "returns the username of the requested user",
+                                                 "general_usage": "suggestting to use the model unpacker mixin"}}}
     def get_username(self, user):
         return {"username": user.username}
+'''
+FunctionUnPackerMixin:
+    This mixin handles the unpacking of variables into functions
+    Example: unpacks {'a':'value of a', 'b':'value of b'} results in function(a='value of a', b='value of b')
 
+DecorativeKeysMixin:
+    The decorative keys mixin make the rest api more usable with
+    any key separation
+    
+HelpMixin:
+    Add help for the api methods
+    
+ModelUnpacker:
+   unpacks a model into a function on post
+'''
 
 ```
 
 and that's it
+
+# Preview
 
 input
 
@@ -86,166 +124,53 @@ returned a debug field in the data, with useful information about the current qu
 # Additional fields:
 
 1. query many users into a users variable
+
 ```json
 {"action":"get_username", "with-model": [{"field":"auth.User", "query":{"pk":1}, "name":"users"},
 {"field":"auth.User", "query":{"pk":2}, "name":"users"}]}
 ```
+
 this will return a list called users into a function containing two models,
  
 a user with a pk of 1 and a user with the pk of 2
 
+2. help and errors
 
-# More examples of django easy rest 
-
-# **setup** #
-
-views.py
-
-```python
-
-
-from easy_rest import views
-from easy_rest.mixins import MethodApiHelpMixin,MethodApiUnPackerMixin
-
-
-class MethodBased(MethodApiUnPackerMixin,MethodApiHelpMixin,DecorativeKeysMethodApi,views.MethodBasedApi):
-    method_helpers = {'special_error': {"help": {"general": "this is a special message"}},
-                      'super_special': {"help": {"general": "general help",
-                                                 "another": "another help"}}}
-    api_allowed_methods = ['__all__']
-
-    def correct(self, data):
-        return {"test": "test"}
-
-    def error(self, data):
-        return 1 / 0
-
-    def special_error(self, data):
-        return 1 / 0
-
-    def super_special(self, data):
-        return 1 / 0
-
-
-```
-
-That's it ! 
-
-urls.py
-
-```python
-from django.conf.urls import url
-from rest_framework.urlpatterns import format_suffix_patterns
-from easy_rest import views
-
-urlpatterns = [
-    url(r'^test/', views.MethodBased.as_view()),
-]
-
-urlpatterns = format_suffix_patterns(urlpatterns)
-
-```
-
-
-now we can browse to "localhost:8000/test/"
-
-and check our rest, here are some examples of inputs and outputs
-
-for the following view.
-
-important! note that the outputs add a debug field if settings.DEBUG = True 
-
-# **inputs and outputs** #
-
-
-input:
+the following input will raise an error because field contains app.model 
 
 ```json
-{"action":"correct"}
+{"action":"get_username", "with-model": {"field":"User", "query":{"pk":1}}}
 ```
-
-output:
+easy rest will add the following to the ouput:
 
 ```json
-{
-    "test": "test"
-}
-```
-
-input:
-
-```json
-{"action":"error"}
-```
-
-output:
-
-```json
-{
-    "debug": {
-        "exception-args": [
-            "division by zero"
-        ],
-        "exception-type": "<class 'ZeroDivisionError'>"
-    },
-    "action": "error",
-    "error": "Exception occurred in method check function usage"
-}
-```
-
-input:
-
-```json
-{"action":"special_error"}
-```
-
-output:
-
-```json
-{
-    "debug": {
-        "exception-args": [
-            "division by zero"
-        ],
-        "exception-type": "<class 'ZeroDivisionError'>"
-    },
     "help": {
-        "help-list": "available help entries dict_keys(['general'])",
-        "message": "this is a special message",
-        "usage": "specific help use {action:special_error, help-prefix:specific error}"
+        "help-list": "available help entries dict_keys(['general', 'general_usage'])",
+        "message": "returns the username of the requested user",
+        "general_usage": "specific help use {action:'get_username', help-prefix:'general_usage'}"
     }
-}
 ```
-
-
-
-input:
+Now for a more complex help
 
 ```json
-{"action":"super_special", "help-prefix":"another"}
+{"action":"get_username", "with-model": {"field":"User", "query":{"pk":1}}, "help-prefix":"general_usage"}
 ```
 
-output:
+the output is:
 
 ```json
-{
-    "debug": {
-        "exception-args": [
-            "division by zero"
-        ],
-        "exception-type": "<class 'ZeroDivisionError'>"
-    },
     "help": {
-        "help-list": "available help entries dict_keys(['general', 'another'])",
-        "message": "another help",
-        "usage": "specific help use {action:super_special, help-prefix:specific error}"
+        "help-list": "available help entries dict_keys(['general', 'general_usage'])",
+        "message": "suggestting to use the model unpacker mixin",
+        "general_usage": "specific help use {action:'get_username', help-prefix:'general_usage'}"
     }
-}
 ```
+
+
 
 # Mixins:
 
-# **MethodApiUnPackerMixin** # 
+# **FunctionUnPackerMixin** # 
         
         this mixin is used to unpack json data into python variables
         
@@ -271,7 +196,7 @@ test(a="value of a", b="value of b")
 ```
 
 
-# **MethodApiHelpMixin** # 
+# *HelpMixin** # 
 
         this mixin decorate api errors with a specific or a general error
                 
@@ -279,7 +204,7 @@ test(a="value of a", b="value of b")
         
         see examples above.
        
-# **DecorativeKeysMethodApi** # 
+# **DecorativeKeysMixin** # 
 
         this mixin is used to allow api keys translations for example:
         
