@@ -5,8 +5,8 @@ from setuptools import find_packages, setup
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='djangoeasyrestpackage',
-    version='0.2',
+    name='django-easy-rest',
+    version='0.3',
     packages=find_packages(),
     include_package_data=True,
     install_requires=['djangorestframework'],

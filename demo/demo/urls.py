@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
 from demo_app.views import ApiTest, RestUpdate
@@ -21,6 +21,7 @@ from demo_app.views import ApiTest, RestUpdate
 urlpatterns = [
     url(r'^update/', RestUpdate.as_view(), name='update-view'),
     url(r'^admin/', admin.site.urls),
+    url(r'^easy_rest/', include('easy_rest.urls'), name='rest_urls'),
 ]
 
 urlpatterns += format_suffix_patterns([

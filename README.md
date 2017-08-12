@@ -12,7 +12,7 @@ Quick start
 1. install using pip:
 
 ```!sh
-    pip3 install djangoeasyrestpackage
+    pip3 install django-easy-rest
 ```
 
 2. Add "easy_rest" to your INSTALLED_APPS setting like this::
