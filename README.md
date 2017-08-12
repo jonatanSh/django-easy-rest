@@ -203,7 +203,7 @@ easy rest will add the following to the ouput:
         "general_usage": "specific help use {action:'get_username', help-prefix:'general_usage'}"
     }
 ```
-Now for a more complex help
+for a more complex help we can use the following command
 
 ```json
 {"action":"get_username", "with-model": {"field":"User", "query":{"pk":1}}, "help-prefix":"general_usage"}
