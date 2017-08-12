@@ -150,13 +150,13 @@ output (debug mode)
                 "is_staff": true,
                 "last_login": "2017-07-23T11:49:41.804352Z",
                 "is_active": true,
-                "email": "s@s.com",
+                "email": "jonatanshimon@gmail.com",
                 "id": 1,
                 "date_joined": "2017-07-21T19:02:39.414653Z",
                 "username": "jonatan",
                 "last_name": "",
                 "_password": null,
-                "password": "pbkdf2_sha256$36000$oqbcQyNRQE2S$QOS41M4EvGkvLZpS4mzlBPA7CftTRuoG3jcQzYL0QvQ="
+                "password": "pbkdf2_sha256$36000$oqbcQyNRQE2S$QOS41M4rvGlvLZmS4mzlBPA7CftTRuoG3jcQzYL0QvQ="
             },
             "action": "get_username"
         }

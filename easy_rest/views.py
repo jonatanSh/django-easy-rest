@@ -4,7 +4,6 @@ from rest_framework import status
 from django.conf import settings
 import json
 
-
 class RestApiView(APIView):
     """
     this is the main api view of the django easy rest
