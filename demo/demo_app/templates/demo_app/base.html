@@ -1,12 +1,9 @@
+{%extends "demo_app/index.html"%}
+
 {% load easy_rest %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% load_rest_all %}
-    <meta charset="UTF-8">
-    <title>Demo</title>
-</head>
-<body>
+{%block head%}
+{% load_rest_scripts %}
+{%endblock%}
+{%block body%}
 {% include "easy_rest/easy_rest_form.html" %}
-</body>
-</html>
+{%endblock%}

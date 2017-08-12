@@ -16,15 +16,16 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
-from demo_app.views import ApiTest, RestUpdate, RestCreate
+from demo_app.views import ApiTest, RestUpdate, RestCreate, WelcomePage
 
 urlpatterns = [
     url(r'^update/', RestUpdate.as_view(), name='update-view'),
     url(r'^create/', RestCreate.as_view(), name='create-view'),
+    url(r'^$', WelcomePage.as_view(), name='index'),
     url(r'^admin/', admin.site.urls),
     url(r'^easy_rest/', include('easy_rest.urls'), name='rest_urls'),
 ]
 
 urlpatterns += format_suffix_patterns([
-    url(r'^$', ApiTest.as_view(), name='api-view'),
+    url(r'api/', ApiTest.as_view(), name='api-view'),
 ])

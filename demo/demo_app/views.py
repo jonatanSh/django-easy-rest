@@ -1,6 +1,6 @@
 from easy_rest.views import RestApiView
 from easy_rest.mixins import ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin, FormPostMixin
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, TemplateView
 from django.contrib.auth.models import User
 
 
@@ -36,3 +36,7 @@ class RestCreate(FormPostMixin, CreateView):
     template_name = "demo_app/base.html"
     model = User
     success_message = 'created user successfully'
+
+
+class WelcomePage(TemplateView):
+    template_name = 'demo_app/home.html'

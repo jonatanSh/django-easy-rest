@@ -30,6 +30,28 @@ Quick start
 
     EASY_REST_ROOT_URL = "easy_rest"
 
+# Demo
+
+1. clone this repo.
+
+2. head to demo and execute
+
+```!sh
+        python3 manage.py migrate
+```
+
+3. create your self a superuser by:
+
+```!sh
+    python3 manage.py createsuperuser
+```
+
+4. that's all now run the server by:
+
+```!sh
+    python3 manage.py runserver
+```
+
 # easy rest mixins:
 
 1. ApiAbstractionsMixin
