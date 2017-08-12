@@ -5,6 +5,13 @@ from django.contrib.auth.models import User
 
 
 class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin, RestApiView):
+    get_data = {"purpose": "this is a demo for the easy rest framework",
+                "usage": {'echo': {"description": "echos back any information use echo",
+                                   "usage": '{"action":"echo","data":"any-data"}'}},
+                'get_username': {"description": "returns the useranme of the requested user",
+                                 "usage": '{"action":"get_username", "with-model": {"field":"auth.User", "query":{"pk":1}}}'}
+                }
+
     @staticmethod
     def echo(data):
         return {"echo": data}

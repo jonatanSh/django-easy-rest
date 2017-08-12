@@ -28,7 +28,8 @@ class RestApiView(APIView):
         :param reuqest: WSGI request
         :return: (dict): Http Response
         """
-        if type(self.get_data) is not dict or type(self.get_data) is not str:
+
+        if type(self.get_data) is not dict and type(self.get_data) is not str:
             self.get_data = {}
         return Response(self.get_data)
 
