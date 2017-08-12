@@ -32,21 +32,27 @@ Quick start
 
 # Demo
 
-1. clone this repo.
+1. clone this repo
 
-2. head to demo and execute
+2. install easy rest by
 
 ```!sh
-        python3 manage.py migrate
+    pip3 install django-easy-rest
 ```
 
-3. create your self a superuser by:
+3. head to demo and execute
+
+```!sh
+    python3 manage.py migrate
+```
+
+4. create your self a superuser by:
 
 ```!sh
     python3 manage.py createsuperuser
 ```
 
-4. that's all now run the server by:
+5. that's all now run the server by:
 
 ```!sh
     python3 manage.py runserver
