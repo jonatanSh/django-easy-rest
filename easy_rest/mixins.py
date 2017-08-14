@@ -358,6 +358,7 @@ class FormPostMixin(Resolver):
     """
     this mixin supports django GCBV and make posts a rest api post
     """
+    form_save_function = lambda form:form.save()
 
     def __init__(self, *args, **kwargs):
         super(FormPostMixin, self).__init__(*args, **kwargs)
@@ -402,7 +403,7 @@ class FormPostMixin(Resolver):
             if success_message:
                 response['alert'] = {'type': 'success', 'message': success_message}
             # saving the form (the model)
-            form.save()
+            self.form_save_function(form)
         else:
             # handling error response
             response = {"status": "post-failure",
