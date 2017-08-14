@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from django.contrib import staticfiles
+from django.contrib.staticfiles.views import serve
 
 
 class ValidateLoading(object):
@@ -28,5 +28,5 @@ class ValidateLoading(object):
 ValidateLoading().validate()
 
 urlpatterns = [
-    url(r'^static/(?P<path>.*)$', staticfiles.views.serve),
+    url(r'^static/(?P<path>.*)$', serve),
 ]
