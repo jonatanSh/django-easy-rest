@@ -4,6 +4,7 @@ from rest_framework import status
 from django.conf import settings
 import json
 
+
 class RestApiView(APIView):
     """
     this is the main api view of the django easy rest
@@ -63,7 +64,7 @@ class RestApiView(APIView):
         :param request: WSGI request
         :return: (httpResponse) processed data
         """
-
+        self.request = request
         # creating the base response
         self.base_response = self.create_base_response()
         try:

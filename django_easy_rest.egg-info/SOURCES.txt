@@ -32,5 +32,7 @@ easy_rest/static/bootstrap-4.0.0-alpha.6-dist/js/bootstrap.min.js
 easy_rest/templates/easy_rest/easy_rest_form.html
 easy_rest/templatetags/easy_rest.py
 easy_rest/templatetags/__pycache__/easy_rest.cpython-35.pyc
+easy_rest/test_framework/recorder/post_record_mixins.py
+easy_rest/test_framework/resolvers/resolve.py
 easy_rest/utils/__init__.py
 easy_rest/utils/search_model.py

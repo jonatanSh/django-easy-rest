@@ -2,9 +2,11 @@ from easy_rest.views import RestApiView
 from easy_rest.mixins import ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin, FormPostMixin
 from django.views.generic import CreateView, UpdateView, TemplateView
 from django.contrib.auth.models import User
+from easy_rest.test_framework.recorder.post_record_mixins import PostRecordTestGenerator
 
 
-class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin, RestApiView):
+class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin,
+              PostRecordTestGenerator, RestApiView):
     get_data = {"purpose": "this is a demo for the easy rest framework",
                 "usage": {'echo': {"description": "echos back any information use echo",
                                    "usage": '{"action":"echo","data":"any-data"}'}},
@@ -12,8 +14,12 @@ class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMix
                                  "usage": '{"action":"get_username", "with-model": {"field":"auth.User", "query":{"pk":1}}}'}
                 }
 
-    @staticmethod
-    def echo(data):
+    def __init__(self, *args, **kwargs):
+        super(ApiTest, self).__init__(*args, **kwargs)
+        self.init_test(app_name='demo_app', view_name='ApiTest')
+
+    def echo(self, data):
+        print(self.request)
         return {"echo": data}
 
     @staticmethod

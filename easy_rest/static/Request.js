@@ -16,7 +16,7 @@ function RequestHandler(url) {
                 headers: {"X-CSRFToken": getCsrf()},
 
                 success: function (jsonResponse) {
-                    ajax_response = JSON.parse(jsonResponse);
+                    ajax_response = jsonResponse;
 
 
                 },
