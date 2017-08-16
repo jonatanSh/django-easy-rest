@@ -9,7 +9,7 @@ setup(
     version='0.8',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['djangorestframework'],
+    install_requires=['djangorestframework', 'django'],
     license='MIT License',
     description='A simple Django app to create rest applications',
     url='https://github.com/jonatanSh/django-easy-rest/',
