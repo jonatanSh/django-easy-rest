@@ -12,9 +12,10 @@ global_template = (
     "        return User.objects.get(pk=pk)\n"
     "    except Exception:\n"
     "        return AnonymousUser()\n"
-    "class Test{view_name}(TestCase):\n"
 
 )
+
+new_test = "class Test{view_name}(TestCase):\n"
 
 functions_template = (
     "    def test_{action}(self):\n"
@@ -31,23 +32,30 @@ class PostRecordTestGenerator(object):
     def __init__(self, *args, **kwargs):
         self.view_name = None
         self.tests_file = None
-        self.test_app = None
-        self.functions = None
+        self.test_file_data = ""
         super(PostRecordTestGenerator, self).__init__(*args, **kwargs)
 
-    def init_test(self, app_name, view_name):
+    def init_test(self, app_name):
         if not app_exists(app_name):
             raise Exception("can't find {0} app {1}".format(app_name,
                                                             'in {0}'.format(
                                                                 get_app_path(app_name) if settings.DEBUG else "")))
-        self.view_name = view_name
-        self.tests_file = get_tests_file(app_name)
-        self.test_app = global_template.format(app_name=app_name, view_name=view_name) + "{functions}"
-        self.functions = ""
+        self.view_name = str(self.__class__.__name__)
+        file_name, data = get_tests_file(app_name, file_name='tests.py')
+        import_line = "from auto_generated_tests.py import *\n"
+        if import_line not in data:
+            with open(file_name, 'a') as file:
+                file.seek(0)
+                file.write(import_line)
+
+        self.tests_file, self.test_file_data = get_tests_file(app_name, data=global_template.format(app_name=app_name,
+                                                                                                    view_name=self.view_name))
+        # self.test_app = (
+        #                  new_test.format(view_name=self.view_name) + "{functions}")
 
     def post(self, request):
 
-        if not self.view_name or not self.tests_file or not self.test_app:
+        if not self.view_name or not self.tests_file:
             raise Exception("unsuccessful init did you miss calling init_test ?")
         try:
             # getting the requested action
@@ -59,12 +67,34 @@ class PostRecordTestGenerator(object):
 
         data = super(PostRecordTestGenerator, self).post(request)
         pk = request.user.pk
-        self.functions += functions_template.format(action=action,
-                                                    result=data.data,
-                                                    view_name=self.view_name,
-                                                    request_data=request.data,
-                                                    request_user_pk=pk)
-        with open(self.tests_file, 'w+') as file:
-            file.write(self.test_app.format(functions=self.functions))
 
-        return data
+        self.append_to_test(data=data, action=action, request=request, pk=pk)
+
+    def append_to_test(self, data, action, request, pk):
+        class_declaration = new_test.format(view_name=self.view_name)
+        index = self.test_file_data.find(class_declaration)
+
+        # new test
+        if index == -1:
+
+            with open(self.tests_file, 'a') as file:
+                file.write(class_declaration + functions_template.format(action=action,
+                                                                         result=data.data,
+                                                                         view_name=self.view_name,
+                                                                         request_data=request.data,
+                                                                         request_user_pk=pk))
+
+        else:
+            with open(self.tests_file, 'a+') as file:
+                seek = 0
+                for i, line in enumerate(file):
+                    if class_declaration == line:
+                        seek = i + 1
+                        break
+
+                file.seek(seek)
+                file.write(functions_template.format(action=action,
+                                                     result=data.data,
+                                                     view_name=self.view_name,
+                                                     request_data=request.data,
+                                                     request_user_pk=pk))

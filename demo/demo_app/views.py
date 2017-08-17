@@ -17,7 +17,7 @@ class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMix
 
     def __init__(self, *args, **kwargs):
         super(ApiTest, self).__init__(*args, **kwargs)
-        self.init_test(app_name='demo_app', view_name='ApiTest')
+        self.init_test(app_name='demo_app')
 
     def echo(self, data):
         print(self.request)
