@@ -20,7 +20,6 @@ class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMix
         self.init_test(app_name='demo_app')
 
     def echo(self, data):
-        print(self.request)
         return {"echo": data}
 
     @staticmethod

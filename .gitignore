@@ -15,6 +15,7 @@
 .sass-cache/
 *.css.map
 *.sqlite3
+
 dist/
 
 django_easy_rest.egg-info/
