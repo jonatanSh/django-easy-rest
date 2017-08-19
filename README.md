@@ -7,7 +7,11 @@ The easy rest adds many useful mixins, and make it very easy to create rest apps
 
 and to integrate rest apps with existing apps
 
-Quick start
+# Links:
+
+[Contributing]: /CONTRIBUTING.md
+
+# Quick start
 -----------
 1. install using pip:
 
