@@ -24,9 +24,11 @@ git push --set-upstream origin {branch_name}
 
 when you done making changes or adding features create a pull request
 
-# Notes 
+# Rules :exclamation:
 
 1. Make sure your pull requests are small and easy to read :+1:
 
 2. add comments and docstrings to your code :+1:
+
+3. for new features tests are a must :guardsman:
 
