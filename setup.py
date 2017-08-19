@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 
 setup(
     name='django-easy-rest',
-    version='1.0',
+    version='1.01',
     packages=find_packages(),
     include_package_data=True,
     install_requires=['djangorestframework', 'django'],
