@@ -264,8 +264,8 @@ class ApiAbstractionsMixin(object):
                 if real_key in data:
                     # making the call
                     data, debug_data = self.abstractions_bind[key](data=data, debug_data=debug_data, real_key=real_key)
-
-        self.base_response['debug'][self.restifiy('processed data')] = debug_data
+        if settings.DEBUG:
+            self.base_response['debug'][self.restifiy('processed data')] = debug_data
         return data
 
 

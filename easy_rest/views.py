@@ -94,7 +94,8 @@ class RestApiView(APIView):
                     # the method wrapper calls the method.
                     output, debug, error = self._method_wrapper(data, _method, action)
                     # updating the base response
-                    self.base_response['debug'].update(debug)
+                    if settings.DEBUG:
+                        self.base_response['debug'].update(debug)
                     self.base_response['data'] = output
                     # if the method call is a success
                     if not error:
@@ -108,7 +109,8 @@ class RestApiView(APIView):
                 except (AttributeError, ImportError) as error:
                     # creating the correct error response
                     self.base_response['error'] = "{} not found".format(self.function_field_name)
-                    self.base_response['debug'].update({"exception": str(error)})
+                    if settings.DEBUG:
+                        self.base_response['debug'].update({"exception": str(error)})
                     # returning the response
                     return Response(data=self.base_response, status=status.HTTP_404_NOT_FOUND)
             else:

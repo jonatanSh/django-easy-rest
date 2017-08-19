@@ -24,3 +24,11 @@ def get_tests_file(app_name, file_name="auto_generated_tests.py", data=""):
         with open(path, 'r') as file:
             data = file.read()
     return path, data
+
+
+def register_unitest():
+    os.environ['under_test'] = "True"
+
+
+def in_test():
+    return bool(os.environ.get('under_test'))
