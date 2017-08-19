@@ -9,7 +9,8 @@ and to integrate rest apps with existing apps
 
 # Links:
 
-[Contributing]: /CONTRIBUTING.md
+[`Contributing`](/CONTRIBUTING.md) :bust_in_silhouette:
+
 
 # Quick start
 -----------
