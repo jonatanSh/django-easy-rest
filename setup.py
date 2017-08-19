@@ -1,14 +1,17 @@
 import os
 from setuptools import find_packages, setup
-import pypandoc
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
-README = pypandoc.convert(os.path.join(os.path.dirname(__file__), 'README.md'), 'rst')
+try:
+    import pypandoc
 
+    README = pypandoc.convert(os.path.join(os.path.dirname(__file__), 'README.md'), 'rst')
+except (ImportError, OSError):
+    README = ""
 setup(
     name='django-easy-rest',
-    version='1.01',
+    version='1.03',
     packages=find_packages(),
     include_package_data=True,
     install_requires=['djangorestframework', 'django'],
