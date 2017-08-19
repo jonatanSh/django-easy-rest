@@ -358,7 +358,7 @@ class FormPostMixin(Resolver):
     """
     this mixin supports django GCBV and make posts a rest api post
     """
-    form_save_function = lambda form:form.save()
+    form_save_function = lambda self, form: form.save()
 
     def __init__(self, *args, **kwargs):
         super(FormPostMixin, self).__init__(*args, **kwargs)
