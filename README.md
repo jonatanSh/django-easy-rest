@@ -82,6 +82,9 @@ Quick start
 
 2. {% load_rest_all %}
 
+# more features:
+
+1. auto testing
 
 # example of the rest view:
 
@@ -105,22 +108,6 @@ class MethodBased(HelpMixin, DecorativeKeysMixin, FunctionUnPackerMixin, ModelUn
                                                  "general_usage": "suggestting to use the model unpacker mixin"}}}
     def get_username(self, user):
         return {"username": user.username}
-'''
-FunctionUnPackerMixin:
-    This mixin handles the unpacking of variables into functions
-    Example: unpacks {'a':'value of a', 'b':'value of b'} results in function(a='value of a', b='value of b')
-
-DecorativeKeysMixin:
-    The decorative keys mixin make the rest api more usable with
-    any key separation
-    
-HelpMixin:
-    Add help for the api methods
-    
-ModelUnpacker:
-   unpacks a model into a function on post
-'''
-
 ```
 
 and that's it
@@ -255,6 +242,31 @@ template
 That's it now the easy rest will make the form post rest,
 
 the easy rest also adds success message of post and it places form errors above the form fields.
+
+
+# Auto testing:
+
+1. the auto test creates a test file based on your api posts
+
+   # **how to use**#
+   add the following to your view
+```python
+    class ApiTest(PostRecordTestGenerator, RestApiView):
+        def __init__(self, *args, **kwargs):
+            super(ApiTest, self).__init__(*args, **kwargs)
+            self.init_test(app_name='demo_app')
+```
+
+# **structure** #
+
+this test will generate test.py for your app if not exists already
+
+and will create a file called auto_generated_post_record_test.py
+
+each api post will be recoded and converted into a test,
+so you only need to make api posts in order to create your test files
+
+! remember remove the PostRecordTestGenerator mixin upon done
 
 # Mixins:
 

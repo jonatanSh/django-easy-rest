@@ -3,6 +3,8 @@ from setuptools import find_packages, setup
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
+with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
+    README = readme.read()
 
 setup(
     name='django-easy-rest',
@@ -12,6 +14,7 @@ setup(
     install_requires=['djangorestframework', 'django'],
     license='MIT License',
     description='A simple Django app to create rest applications',
+    long_description=README,
     url='https://github.com/jonatanSh/django-easy-rest/',
     author='Jonathan Shimon',
     author_email='jonatanshimon@gmail.com',
