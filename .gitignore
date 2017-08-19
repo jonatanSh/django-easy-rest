@@ -7,13 +7,6 @@
 .env
 .tox
 
-DJANGO_venv/*
-/DJANGO_venv/*
-/DJANGO_venv
-*/backend_env/*
-*/backend_lib/backend_local.py
-*~
-*/skillz/settings/local.py
 
 */*.sqlite3
 *.sqlite3
@@ -22,7 +15,7 @@ DJANGO_venv/*
 .sass-cache/
 *.css.map
 *.sqlite3
-# node modules
-/node_modules/*
-package-lock.json
+dist/
+
+django_easy_rest.egg-info/
 
