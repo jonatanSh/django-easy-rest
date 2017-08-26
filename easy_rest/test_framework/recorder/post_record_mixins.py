@@ -39,95 +39,164 @@ functions_template = (
 
 class PostRecordTestGenerator(object):
     def __init__(self, *args, **kwargs):
+        """
+        this just sets the class to initialize view_name, test_File, current_settings_keys,
+        test_file_data, test_file_name to defaults
+        :param args:
+        :param kwargs:
+        """
+        # the name of the view to test
         self.view_name = None
+        # the file to write test to
         self.tests_file = None
+        # the settings to keep in the test
+        # for example when testing keep debug as it was when recorded
         self.use_current_settings_keys = ['DEBUG']
+        # the test file data
         self.test_file_data = ""
+        # the test file name
         self.test_file_name = 'auto_generated_post_record_test'
         super(PostRecordTestGenerator, self).__init__(*args, **kwargs)
 
     def init_test(self, app_name):
+        """
+        this function initializes the test
+        :param app_name: the app to test
+        :return: None
+        """
+
+        # checking if the app exists if not raises an exception
         if not app_exists(app_name):
             raise Exception("can't find {0} app {1}".format(app_name,
                                                             'in {0}'.format(
                                                                 get_app_path(app_name) if settings.DEBUG else "")))
+        # getting the view to test
         self.view_name = str(self.__class__.__name__)
+
+        # the test file , data it contained
         file_name, data = get_tests_file(app_name, file_name='tests.py')
-        import_line = "from .auto_generated_post_record_test import *\n"
+
+        # the line to import
+        import_line = "from .{} import *\n".format(self.test_file_name)
+        # checking if import line is in data
+        # if not appending import line to data. (global test file)
         if import_line not in data:
             with open(file_name, 'a') as file:
                 file.seek(0)
                 file.write(import_line)
 
+        # generating or reading specific test file
         self.tests_file, self.test_file_data = get_tests_file(app_name, data=global_template.format(app_name=app_name,
                                                                                                     view_name=self.view_name),
                                                               file_name='auto_generated_post_record_test.py')
-        # self.test_app = (
-        #                  new_test.format(view_name=self.view_name) + "{functions}")
 
     def post(self, request):
+        """
+        Overriding the original post function
+        :param request: WSGI request
+        :return: rest_framework.Response
+        """
+
+        # if this is a test post (Mocked post)
         if in_test():
+            # does nothing
             return super(PostRecordTestGenerator, self).post(request)
+
+        # if the were an error upon initialization
         if not self.view_name or not self.tests_file:
-            raise Exception("unsuccessful init did you miss calling init_test ?")
+            raise Exception("unsuccessful init maybe you forgot calling init_test ?")
+
+        # trying to get the action of the current request
         try:
             # getting the requested action
             action = self._pythonize(request.data[self.function_field_name])
         except Exception:
+            # if the is not action generating new test name
             action = 'easy_rest_{}_test'.format(self.function_from_time())
 
+        # getting the data if the post response
         data = super(PostRecordTestGenerator, self).post(request)
+
+        # try getting the pk of the post user
         pk = request.user.pk
 
+        # appending data to the test
         self.append_to_test(data=data, action=action, request=request, pk=pk)
 
+        # returning the original data
         return data
 
     def append_to_test(self, data, action, request, pk):
+        """
+        Appending a new test or to original test
+        :param data: data of post
+        :param action: action of request
+        :param request: WSGI request
+        :param pk: user pk
+        :return: None
+        """
+        # generating the class declaration for the test
         class_declaration = new_test.format(view_name=self.view_name)
+        # setting index to point to the beginning of the class file (FP)
         index = self.test_file_data.find(class_declaration)
 
-        # new test
+        # if class was not found (FP = -1)
         if index == -1:
             with open(self.tests_file, 'a') as file:
-                file.write(class_declaration + functions_template.format(action=action,
-                                                                         result=data.data,
-                                                                         request_data=request.data,
-                                                                         request_user_pk=pk,
-                                                                         override_settings=get_override_settings(
-                                                                             attributes=self.use_current_settings_keys
-                                                                         )))
-
+                # appending class declaration + generated test
+                file.write(class_declaration + self.format_function(name=action, data=data, request=request, pk=pk))
+        # if class existed in test file
         else:
+            # the start of the test before the current test
             start = ""
+            # the name of the function
             function_name = "test_{action}".format(action=action)
+            # prefix to append to the function name
             prefix = ""
+            # the end of the test class
             end = ""
-            seek = 0
+
+            # iterating over the current test file
             with open(self.tests_file, 'r') as file_rad:
                 for i, line in enumerate(file_rad):
-                    # print(line.encode('utf-8'), class_declaration.encode('utf-8'))
-                    if class_declaration == line:
-                        seek = i
-                    if not seek or seek == i:
+                    if i <= index:  # if current line is class declaration
                         start += line
                     else:
-                        end += line
-                    if function_name in line:
+                        end += line  # if current line is after class declaration
+                    if function_name in line:  # if a function with that name exists
                         prefix = action
-
+            # generating test name or using original depends if it existed
             name = action if not prefix else self.function_from_time(prefix=prefix)
+
+            # writing the current test
             with open(self.tests_file, 'w+') as file:
-                file.write(start + functions_template.format(action=name,
-                                                             result=data.data,
-                                                             request_data=request.data,
-                                                             request_user_pk=pk,
-                                                             override_settings=get_override_settings(
-                                                                 attributes=self.use_current_settings_keys
-                                                             )) + end)
+                file.write(start + self.format_function(name=name, data=data, request=request, pk=pk) + end)
+
+    def format_function(self, name, data, request, pk):
+        """
+        Formatting a new test
+        :param name: test name
+        :param data: data of post
+        :param request: WSGI request
+        :param pk: user pk
+        :return: new formatted test
+        """
+        return functions_template.format(action=name,
+                                         result=data.data,
+                                         request_data=request.data,
+                                         request_user_pk=pk,
+                                         override_settings=get_override_settings(
+                                             attributes=self.use_current_settings_keys
+                                         ))
 
     @staticmethod
     def function_from_time(prefix="", suffix=""):
+        """
+        Generates a new function name from time
+        :param prefix: prefix to append
+        :param suffix: suffix to append
+        :return: new function name (str)
+        """
         return prefix + ("_" if prefix else "") + str(datetime.now()).replace(
             ':', "_"
         ).replace(".", "_").replace("-", "_").replace(" ", "_") + ("_" if suffix else "") + suffix
