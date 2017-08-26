@@ -11,6 +11,7 @@ and to integrate rest apps with existing apps
 
 [`Contributing`](/CONTRIBUTING.md) :bust_in_silhouette:
 
+[`Wiki`](/jonatanSh/django-easy-rest/wiki)
 
 # Quick start
 -----------
