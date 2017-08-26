@@ -1,0 +1,6 @@
+recursive-include easy_rest/templates *
+recursive-include easy_rest/templatetags *
+recursive-include easy_rest/static *
+recursive-include easy_rest/test_framework *
+
+include README.md

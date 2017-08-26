@@ -6,18 +6,18 @@ from easy_rest.test_framework.recorder.post_record_mixins import PostRecordTestG
 
 
 class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin,
-              PostRecordTestGenerator, RestApiView):
+              '''PostRecordTestGenerator''', RestApiView):
     get_data = {"purpose": "this is a demo for the easy rest framework",
                 "usage": {'echo': {"description": "echos back any information use echo",
                                    "usage": '{"action":"echo","data":"any-data"}'}},
                 'get_username': {"description": "returns the username of the requested user",
                                  "usage": '{"action":"get_username", "with-model": {"field":"auth.User", "query":{'
                                           '"pk":1}}}'}
-                }
+                }git 
 
-    def __init__(self, *args, **kwargs):
-        super(ApiTest, self).__init__(*args, **kwargs)
-        self.init_test(app_name='demo_app')
+    # def __init__(self, *args, **kwargs):
+    #     super(ApiTest, self).__init__(*args, **kwargs)
+    #     self.init_test(app_name='demo_app')
 
     def echo(self, data):
         return {"echo": data}
