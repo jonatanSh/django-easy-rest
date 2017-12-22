@@ -56,6 +56,7 @@ def _get_rest_scripts():
         'Request.js',
         'PostHandler.js',
         'Submit.js',
+        'fetch/restFetch.js'
     ]
     return '<!--start of easy rest scripts-->\n{}\n<!--end of easy rest scripts-->'.format(
         '\n'.join([js_base.format(file) for file in files])

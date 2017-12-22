@@ -3,6 +3,9 @@ from easy_rest.mixins import ModelUnpacker, FunctionUnPackerMixin, DecorativeKey
 from django.views.generic import CreateView, UpdateView, TemplateView
 from django.contrib.auth.models import User
 from easy_rest.test_framework.recorder.post_record_mixins import PostRecordTestGenerator
+from easy_rest.views import TemplateContextFetcherView
+from datetime import datetime
+from random import randint
 
 
 class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin,
@@ -46,3 +49,10 @@ class RestCreate(FormPostMixin, CreateView):
 
 class WelcomePage(TemplateView):
     template_name = 'demo_app/home.html'
+
+
+class ActiveTemplate(TemplateContextFetcherView):
+    template_name = 'demo_app/live_ctx.html'
+
+    def get_context_data(self, **kwargs):
+        return {"time": str(datetime.now()), "random_int": randint(0, 100)}
