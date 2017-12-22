@@ -54,11 +54,16 @@ function RestFetch(){
 var currentPageContextFetcher = new RestFetch();
 
 $(document).ready(function(){
-    // first fetch
-    currentPageContextFetcher.fetch();
 
-    // always fetch
-    currentPageContextFetcher.bind();
+    // this script will bind only for pages with the fetch context class
+    if($(".fetch-context").length > 0)
+    {
+        // first fetch
+        currentPageContextFetcher.fetch();
+
+        // always fetch
+        currentPageContextFetcher.bind();
+    }
 
 });
 
