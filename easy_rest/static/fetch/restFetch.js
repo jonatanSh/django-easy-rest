@@ -1,9 +1,7 @@
 window.contextUpdateInterval = 3000;
-
 function RestFetch(){
 
-    this.api = new RequestHandler(window.location.pathname);
-
+    this.apis = {}
     this.fetchIntervalId = null;
 
     this.beforeFormatHtml = {};
@@ -14,15 +12,27 @@ function RestFetch(){
     }
 
     this.fetch = function(){
+    // should optimize to minimum number of calls
+     $(".fetch-context").each(function(){
+            let element = $(this);
+            let url = element.data("fetch-url");
+            url = url === undefined ? window.location.pathname : url;
+            if(!(url in currentPageContextFetcher.apis)){
+                currentPageContextFetcher.apis[url] = new RequestHandler(url);
+            }
+            let currentApi = currentPageContextFetcher.apis[url]
 
-        currentPageContextFetcher.api.SendAsync({"action":"fetch-content"}, currentPageContextFetcher.formatData);
+            // optimize send more then one element for the same url
+            currentApi.SendAsync({"action":"fetch-content"}, currentPageContextFetcher.formatData,
+            function(error){console.warn("fetchable error", error)},
+            {"elements":[element]});
+        });
 
     };
 
     this.formatData = function(context){
-        context = JSON.parse(context);
-        $(".fetch-context").each(function(){
-            let element = $(this);
+        let elements = context['elements'];
+        for(let element of elements){
             let elementId = element.attr("id");
             if(elementId === undefined){
                 elementId = randomId();
@@ -39,8 +49,10 @@ function RestFetch(){
             }
 
             element.html(html);
+        }
 
-        })
+
+
     };
 
     this.bind = function(){

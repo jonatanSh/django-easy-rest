@@ -75,3 +75,28 @@ def _get_bootstrap():
     data = '\n'.join([css_base.format("bootstrap-4.0.0-alpha.6-dist/css/{}".format(file)) for file in files])
     data += '\n' + css_base.format("bootstrap-4.0.0-alpha.6-dist/js/{}".format("bootstrap.js"))
     return '<!--start bootstrap-->\n{}\n<!--end of bootstrap-->'.format(data)
+
+
+@register.tag('livecontext')
+def live_context(parser, token):
+    bits = token.split_contents()[1:]  # first is the template tag name
+    url = None
+    if bits:
+        url = bits[0]
+
+    nodelist = parser.parse(('endlivecontext',))
+    parser.delete_first_token()
+    return LiveContext(nodelist, url)
+
+
+class LiveContext(template.Node):
+    def __init__(self, nodelist, url):
+        self.nodelist = nodelist
+        self.url = url
+
+    def render(self, context):
+        output = self.nodelist.render(context)
+        if self.url:
+            return '<div class="fetch-context" data-fetch-url="{}">\n{}\n</div>'.format(self.url, output)
+        else:
+            return '<div class="fetch-context">\n{}\n</div>'.format(output)

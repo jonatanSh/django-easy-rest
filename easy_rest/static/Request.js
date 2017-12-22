@@ -30,7 +30,7 @@ function RequestHandler(url) {
     };
 
     this.SendAsync = function (data, OnSuccess, OnError = function (error) {
-    }) {
+    }, additionalSuccessData={}) {
 
         $.ajax(
             {
@@ -40,7 +40,19 @@ function RequestHandler(url) {
                 data: data,
                 headers: {"X-CSRFToken": getCsrf()},
 
-                success: OnSuccess,
+                success: function(data){
+                    let functionData = data;
+                    try{
+                        functionData = JSON.parse(functionData);
+                    }
+                    catch(err){
+
+                    }
+                    for(key in additionalSuccessData){
+                        functionData[key] = additionalSuccessData[key];
+                    }
+                    OnSuccess(functionData);
+                },
                 error: OnError
             });
 

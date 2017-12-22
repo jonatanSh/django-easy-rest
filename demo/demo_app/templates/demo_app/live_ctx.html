@@ -1,10 +1,14 @@
 {%extends "demo_app/base.html"%}
+{% load easy_rest %}
+
 
 {%block body%}
 
-<div class="fetch-context">
+{% livecontext %}
+
 <h1>Live time from server {time}</h1>
 
 <h1>Random int from server {random_int}</h1>
-</div>
+
+{% endlivecontext %}
 {%endblock body%}
