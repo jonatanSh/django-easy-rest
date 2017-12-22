@@ -57,7 +57,7 @@ function RestFetch(){
 
     this.bind = function(){
 
-        setInterval(this.fetch, window.contextUpdateInterval);
+        this.fetchIntervalId = setInterval(this.fetch, window.contextUpdateInterval);
     }
 
 
