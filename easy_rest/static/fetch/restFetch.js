@@ -12,7 +12,7 @@ function RestFetch(){
     }
 
     this.fetch = function(){
-    // should optimize to minimum number of calls
+     optimized = {};
      $(".fetch-context").each(function(){
             let element = $(this);
             let url = element.data("fetch-url");
@@ -21,12 +21,19 @@ function RestFetch(){
                 currentPageContextFetcher.apis[url] = new RequestHandler(url);
             }
             let currentApi = currentPageContextFetcher.apis[url]
+            if(!(currentApi in optimized))
+                optimized[currentApi] = [];
 
-            // optimize send more then one element for the same url
-            currentApi.SendAsync({"action":"fetch-content"}, currentPageContextFetcher.formatData,
-            function(error){console.warn("fetchable error", error)},
-            {"elements":[element]});
+            optimized[currentApi].push(element);
+
         });
+
+      for(call of optimized){
+            // optimize send more then one element for the same url
+            call.SendAsync({"action":"fetch-content"}, currentPageContextFetcher.formatData,
+            function(error){console.warn("fetchable error", error)},
+            {"elements":optimized[call]});
+      }
 
     };
 
