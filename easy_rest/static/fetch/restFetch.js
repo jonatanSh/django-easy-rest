@@ -20,19 +20,19 @@ function RestFetch(){
             if(!(url in currentPageContextFetcher.apis)){
                 currentPageContextFetcher.apis[url] = new RequestHandler(url);
             }
-            let currentApi = currentPageContextFetcher.apis[url]
-            if(!(currentApi in optimized))
-                optimized[currentApi] = [];
+            if(!(url in optimized))
+                optimized[url] = [];
 
-            optimized[currentApi].push(element);
+            optimized[url].push(element);
 
         });
 
-      for(call of optimized){
+      for(url in optimized){
+            let currentApi = currentPageContextFetcher.apis[url]
             // optimize send more then one element for the same url
-            call.SendAsync({"action":"fetch-content"}, currentPageContextFetcher.formatData,
+            currentApi.SendAsync({"action":"fetch-content"}, currentPageContextFetcher.formatData,
             function(error){console.warn("fetchable error", error)},
-            {"elements":optimized[call]});
+            {"elements":optimized[url]});
       }
 
     };
