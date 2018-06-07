@@ -100,6 +100,11 @@
 
 <div class="container">
     <h1>The api action failed, here you can debug the api, view the output json and step throw the code </h1>
+    {% if traceback %}
+        <pre class="html"><code>
+        {{traceback}}
+    </code></pre>
+    {% endif %}
     <p>
         <a class="btn btn-primary" data-toggle="collapse" href="#jsonOutput" role="button" aria-expanded="false">
             Json api output
@@ -109,7 +114,7 @@
     <hr>
     <div class="collapse" id="jsonOutput">
         <div class="card card-body">
-   <pre id="#jsonOutput"><code>
+   <pre id="#jsonOutput" class="json"><code>
 {{output}}
 </code></pre>
         </div>

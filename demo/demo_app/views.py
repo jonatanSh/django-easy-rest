@@ -23,6 +23,9 @@ class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMix
     def echo(self, data):
         return {"echo": data}
 
+    def calculate(self, data):
+        return {"result": eval(data)}
+
     @staticmethod
     def get_username(user):
         return {"username": user.username}

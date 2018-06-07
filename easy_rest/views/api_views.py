@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status as http_status
 from django.conf import settings
-from .debugger import DebugHandler
+from .debugger import DebugHandler, get_error
 import json
 
 
@@ -65,6 +65,9 @@ class RestApiView(APIView):
         :param request: WSGI request
         :return: (httpResponse) processed data
         """
+        if settings.DEBUG and 'last_debug_error' in self.request.session:
+            self.request.session['last_debug_error'] = None
+            self.request.session.save()
         self.request = request
         # creating the base response
         self.base_response = self.create_base_response()
@@ -103,6 +106,9 @@ class RestApiView(APIView):
                         # returning the response
                         return self.return_response(data=self.base_response, status=http_status.HTTP_200_OK)
                     else:
+                        if isinstance(error, Exception):
+                            self.request.session['last_debug_error'] = get_error(error)
+                            self.request.session.save()
                         # returning error response
                         return self.return_response(data=self.base_response,
                                                     status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -125,6 +131,8 @@ class RestApiView(APIView):
             # if there is a general error
             self.base_response["error"] = "general api error"
             if settings.DEBUG:
+                self.request.session['last_debug_error'] = get_error(error)
+                self.request.session.save()
                 self.base_response['debug'].update({self.restifiy('exception type'): str(type(error)),
                                                     self.restifiy('exception args'): error.args})
             # returning general error
@@ -171,6 +179,8 @@ class RestApiView(APIView):
         additional = None
         # debug data
         debug = {}
+        exception = None
+
         try:
             # calling the method
             out = self.call_method(data=data, method=method)
@@ -180,9 +190,10 @@ class RestApiView(APIView):
                           self.function_field_name: action}
             if settings.DEBUG:
                 debug = {'exception-type': str(type(error)), 'exception-args': error.args}
+            exception = error
 
         if additional:
-            return additional, debug, True
+            return additional, debug, exception
         if out:
             return out, debug, False
         if settings.DEBUG:
