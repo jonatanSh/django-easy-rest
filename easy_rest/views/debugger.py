@@ -4,6 +4,7 @@ from ..utils.utils import reverse_lazy
 from uuid import uuid4
 from rest_framework.response import Response
 from django.http.response import HttpResponseForbidden
+import json
 
 
 class DebugHandler(object):
@@ -18,7 +19,7 @@ class DebugHandler(object):
             "token": token,
             "data": self.data
         }
-        self.data['debug']['url'] = reverse_lazy("easy_rest:debugger") + "?token={}".format(token)
+        self.data['debug_url'] = reverse_lazy("easy_rest:debugger") + "?token={}".format(token)
         return Response(data=self.data, status=self.status)
 
 
@@ -37,3 +38,12 @@ class DebugView(TemplateView):
         response = super(DebugView, self).get(request, *args, **kwargs)
 
         return response
+
+    def get_context_data(self, **kwargs):
+        debug_data = self.request.session.get("debug_info_api")['data']
+
+        ctx = super(DebugView, self).get_context_data(**kwargs)
+        if 'debug_url' in debug_data:
+            del debug_data['debug_url']
+        ctx['output'] = json.dumps(debug_data, indent=1)
+        return ctx

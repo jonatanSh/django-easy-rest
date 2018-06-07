@@ -47,6 +47,11 @@ def load_rest_all():
     return mark_safe(data)
 
 
+@register.simple_tag()
+def load_debug_scripts():
+    return load_rest_all()
+
+
 def _get_rest_scripts():
     """
     :return: html scripts
