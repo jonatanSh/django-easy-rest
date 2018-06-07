@@ -1,5 +1,5 @@
+let debugHandler = new Debugger();
 function RequestHandler(url) {
-
     this.url = url;
     /**
      * on failure returns {"error":"error value"}
@@ -21,6 +21,8 @@ function RequestHandler(url) {
 
                 },
                 error: function (error) {
+                    debugHandler.create(error.responseJSON.debug);
+                    debugHandler.handle();
                     ajax_response = {"error": error}
 
                 }
@@ -31,7 +33,11 @@ function RequestHandler(url) {
 
     this.SendAsync = function (data, OnSuccess, OnError = function (error) {
     }, additionalSuccessData={}) {
-
+        onErrorWrapper = function(error) {
+            debugHandler.create(error.responseJSON.debug);
+            debugHandler.handle();
+            OnError(error);
+        };
         $.ajax(
             {
                 async: true,
@@ -53,7 +59,7 @@ function RequestHandler(url) {
                     }
                     OnSuccess(functionData);
                 },
-                error: OnError
+                error: onErrorWrapper
             });
 
     };

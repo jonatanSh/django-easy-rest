@@ -1,0 +1,15 @@
+{%extends "demo_app/base.html"%}
+{% load easy_rest %}
+
+
+{%block body%}
+
+<h1>Click the button to spawn an api error</h1>
+<a class="btn btn-primary" href='javascript:api.SendSync({"action":"echos", "data":"test"})'>Api error</a>
+{%endblock body%}
+
+{% block page_javascript %}
+<script>
+let api = new RequestHandler("/api/");
+</script>
+{% endblock page_javascript %}

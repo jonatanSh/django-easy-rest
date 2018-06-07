@@ -8,8 +8,7 @@ from datetime import datetime
 from random import randint
 
 
-class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin,
-              PostRecordTestGenerator, RestApiView):
+class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMixin, RestApiView):
     get_data = {"purpose": "this is a demo for the easy rest framework",
                 "usage": {'echo': {"description": "echos back any information use echo",
                                    "usage": '{"action":"echo","data":"any-data"}'}},
@@ -20,7 +19,6 @@ class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMix
 
     def __init__(self, *args, **kwargs):
         super(ApiTest, self).__init__(*args, **kwargs)
-        self.init_test(app_name='demo_app')
 
     def echo(self, data):
         return {"echo": data}
@@ -56,3 +54,7 @@ class ActiveTemplate(TemplateContextFetcherView):
 
     def get_context_data(self, **kwargs):
         return {"time": str(datetime.now()), "random_int": randint(0, 100)}
+
+
+class Error(TemplateView):
+    template_name = "demo_app/error.html"

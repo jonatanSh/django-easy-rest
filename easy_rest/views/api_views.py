@@ -1,7 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status as http_status
 from django.conf import settings
+from .debugger import DebugHandler
 import json
 
 
@@ -84,8 +85,8 @@ class RestApiView(APIView):
                             self.function_field_name,
                             action,
                             self.api_allowed_methods)
-                        return Response(data=self.base_response,
-                                        status=status.HTTP_403_FORBIDDEN)
+                        return self.return_response(data=self.base_response,
+                                                    status=http_status.HTTP_403_FORBIDDEN)
 
                     # if this action is allowed searching for this action
                     _method = getattr(self, action)
@@ -100,10 +101,11 @@ class RestApiView(APIView):
                     # if the method call is a success
                     if not error:
                         # returning the response
-                        return Response(data=self.base_response, status=status.HTTP_200_OK)
+                        return self.return_response(data=self.base_response, status=http_status.HTTP_200_OK)
                     else:
                         # returning error response
-                        return Response(data=self.base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        return self.return_response(data=self.base_response,
+                                                    status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
                 # if this method was not found
                 except (AttributeError, ImportError) as error:
@@ -112,12 +114,12 @@ class RestApiView(APIView):
                     if settings.DEBUG:
                         self.base_response['debug'].update({"exception": str(error)})
                     # returning the response
-                    return Response(data=self.base_response, status=status.HTTP_404_NOT_FOUND)
+                    return self.return_response(data=self.base_response, status=http_status.HTTP_404_NOT_FOUND)
             else:
                 # if the is no action in data creating the correct response
                 self.base_response['error'] = "no {} in data".format(self.function_field_name)
                 # returning the response.
-                return Response(data=self.base_response, status=status.HTTP_400_BAD_REQUEST)
+                return self.return_response(data=self.base_response, status=http_status.HTTP_400_BAD_REQUEST)
 
         except (Exception, json.JSONDecodeError) as error:
             # if there is a general error
@@ -126,7 +128,16 @@ class RestApiView(APIView):
                 self.base_response['debug'].update({self.restifiy('exception type'): str(type(error)),
                                                     self.restifiy('exception args'): error.args})
             # returning general error
-            return Response(data=self.base_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return self.return_response(data=self.base_response, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def return_response(self, data, status):
+        if status in [
+            http_status.HTTP_400_BAD_REQUEST,
+            http_status.HTTP_404_NOT_FOUND,
+            http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+        ]:
+            return DebugHandler(request=self.request, data=data, status=status).handle()
+        return Response(data, status)
 
     def create_base_response(self):
         """

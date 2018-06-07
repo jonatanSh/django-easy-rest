@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from django.contrib.staticfiles.views import serve
+from .views import DebugView
 
 
 class ValidateLoading(object):
@@ -29,4 +30,6 @@ ValidateLoading().validate()
 
 urlpatterns = [
     url(r'^static/(?P<path>.*)$', serve),
+    url(r'^debugger/', DebugView.as_view(), name="debugger"),
+
 ]
