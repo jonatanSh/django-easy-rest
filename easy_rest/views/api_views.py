@@ -16,7 +16,10 @@ class RestApiView(APIView):
     function_field_name = 'action'
 
     # the api allowed methods ('actions')
-    api_allowed_methods = ['__all__']
+    api_allowed_methods_post = ['__all__']
+
+    # the api allowed methods ('actions')
+    api_allowed_methods_get = ['__all__']
 
     # the data to return on get of the api view
     get_data = {}
@@ -26,16 +29,18 @@ class RestApiView(APIView):
 
     debugger = DebugCache()
 
-    def get(self, reuqest):
+    def get(self, request):
         """
         the get of the api
-        :param reuqest: WSGI request
+        :param request: WSGI request
         :return: (dict): Http Response
         """
-
         if type(self.get_data) is not dict and type(self.get_data) is not str:
             self.get_data = {}
-        return Response(self.get_data)
+        if not request.GET:
+            return Response(self.get_data)
+        else:
+            return self.base_factory(base_data=request.GET, api_allowed_methods=self.api_allowed_methods_get)
 
     def _pythonize(self, name):
         """
@@ -63,9 +68,13 @@ class RestApiView(APIView):
         return data
 
     def post(self, request):
+        return self.base_factory(base_data=request.data, api_allowed_methods=self.api_allowed_methods_post)
+
+    def base_factory(self, base_data, api_allowed_methods):
         """
         The easy rest post method handle post requests and make abstractions for the rest mixins
-        :param request: WSGI request
+        :param base_data: request base data
+        :param api_allowed_methods: allowed methods for the api
         :return: (httpResponse) processed data
         """
         if settings.DEBUG:
@@ -75,12 +84,11 @@ class RestApiView(APIView):
             if 'last_debug_error' in self.request.session:
                 self.request.session['last_debug_error'] = None
                 self.request.session.save()
-        self.request = request
         # creating the base response
-        self.base_response = self.create_base_response()
+        self.base_response = self.create_base_response(api_allowed_methods)
         try:
             # preparing the data by api abstractions if mixin is on.
-            data = self.api_abstractions(request.data)
+            data = self.api_abstractions(base_data)
             # if this is a valid api request
             if self.function_field_name in data:
 
@@ -89,12 +97,12 @@ class RestApiView(APIView):
                 try:
 
                     # if action is not allowed
-                    if action not in self.api_allowed_methods and '__all__' not in self.api_allowed_methods:
+                    if action not in api_allowed_methods and '__all__' not in api_allowed_methods:
                         # returning not allowed response
                         self.base_response['error'] = '{0} {1} not allowed , allowed {0} {2}'.format(
                             self.function_field_name,
                             action,
-                            self.api_allowed_methods)
+                            api_allowed_methods)
                         return self.return_response(data=self.base_response,
                                                     status=http_status.HTTP_403_FORBIDDEN)
 
@@ -169,14 +177,14 @@ class RestApiView(APIView):
             return DebugHandler(request=self.request, data=data, status=status).handle()
         return Response(data, status)
 
-    def create_base_response(self):
+    def create_base_response(self, api_allowed_methods):
         """
         creates the base response
         :return: base response object
         """
         if settings.DEBUG:
             return {'debug': {
-                self.restifiy("api attributes"): {self.restifiy("api allowed methods"): self.api_allowed_methods}},
+                self.restifiy("api attributes"): {self.restifiy("api allowed methods"): api_allowed_methods}},
                 'debug-mode': ["enabled", "to disable go to settings.py and change DEBUG=True to false"]}
         return {}
 
