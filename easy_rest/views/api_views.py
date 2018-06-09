@@ -151,11 +151,15 @@ class RestApiView(APIView):
 
     def rebuild_request_code(self):
         data = self.request.data
+        if self.request.method == "GET":
+            action = "GetSync"
+        else:
+            action = "SendSync"
         return "\n".join([
             "// the code below is built to debug, and uses SyncRequests, "
             "if your request was Async, the code will generate a sync request",
             "api = new RequestHandler({})".format(self.request.path),
-            "api.SendSync({})".format(json.dumps(data, indent=1))
+            "api.{}({})".format(action, json.dumps(data, indent=1))
         ])
 
     def debug(self, error, handler):

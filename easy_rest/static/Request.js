@@ -5,6 +5,10 @@ function DummyDebugger() {
 
 Debugger = typeof(Debugger) !== "undefined" ? Debugger : DummyDebugger;
 let debugHandler = new Debugger();
+const REQUEST_TYPES = {
+    post: "POST",
+    get: "GET",
+};
 
 function RequestHandler(url) {
     this.url = url;
@@ -12,13 +16,25 @@ function RequestHandler(url) {
      * on failure returns {"error":"error value"}
      * @return {object}
      */
-    this.SendSync = function (data) {
+    this.sendSync = function (data) {
+        return this.baseSync(data, REQUEST_TYPES.post);
+    };
+
+    this.getSync = function (data) {
+        return this.baseSync(data, REQUEST_TYPES.get);
+    };
+
+    // legacy
+    this["SendSync"] = this.sendSync;
+    this["GetSync"] = this.getSync;
+
+    this.baseSync = function (data, requestType) {
         let ajax_response = undefined;
         $.ajax(
             {
                 async: false,
                 url: this.url,
-                type: 'POST',
+                type: requestType,
                 data: data,
                 headers: {"X-CSRFToken": getCsrf()},
 
@@ -35,21 +51,35 @@ function RequestHandler(url) {
                 }
             });
         return ajax_response;
-
     };
 
-    this.SendAsync = function (data, OnSuccess, OnError = function (error) {
+
+    this.sendASync = function (data, onSuccess, onError = function (error) {
     }, additionalSuccessData = {}) {
-        onErrorWrapper = function (error) {
+        return this.baseASync(data, onSuccess, onError, additionalSuccessData, REQUEST_TYPES.post);
+    };
+
+    this.getASync = function (data, onSuccess, onError = function (error) {
+    }, additionalSuccessData = {}) {
+        return this.baseASync(data, onSuccess, onError, additionalSuccessData, REQUEST_TYPES.get);
+    };
+
+    // legacy
+    this["SendAsync"] = this.sendASync;
+    this["GetAsync"] = this.getASync;
+
+
+    this.baseASync = function (data, onSuccess, onError, additionalSuccessData, requestType) {
+        let onErrorWrapper = function (error) {
             debugHandler.create(error.responseJSON);
             debugHandler.handle();
-            OnError(error);
+            onError(error);
         };
         $.ajax(
             {
                 async: true,
                 url: this.url,
-                type: 'POST',
+                type: requestType,
                 data: data,
                 headers: {"X-CSRFToken": getCsrf()},
 
@@ -61,10 +91,10 @@ function RequestHandler(url) {
                     catch (err) {
 
                     }
-                    for (key in additionalSuccessData) {
+                    for (let key in additionalSuccessData) {
                         functionData[key] = additionalSuccessData[key];
                     }
-                    OnSuccess(functionData);
+                    onSuccess(functionData);
                 },
                 error: onErrorWrapper
             });
