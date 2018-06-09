@@ -47,9 +47,25 @@ def load_rest_all():
     return mark_safe(data)
 
 
+def _load_debug_scripts():
+    data = [js_base.format("jquery-3.2.1.min.js")]
+    for script in [
+        "bootstrap.js",
+        "highlight.js",
+        "json.js"
+    ]:
+        data.append(js_base.format("/highlight/{}".format(script)))
+    for script in [
+        "default.css",
+        "bootstrap.css",
+    ]:
+        data.append(css_base.format("/highlight/{}".format(script)))
+    return mark_safe("\n".join(data))
+
+
 @register.simple_tag()
 def load_debug_scripts():
-    return load_rest_all()
+    return _load_debug_scripts() + load_rest_all()
 
 
 def _get_rest_scripts():
