@@ -72,9 +72,11 @@ def _get_rest_scripts():
     """
     :return: html scripts
     """
-    files = [
+    files = []
+    if settings.DEBUG:
+        files.append("debugger.js")
+    files += [
         'jquery-3.2.1.min.js',
-        "debugger.js",
         'Request.js',
         'PostHandler.js',
         'Submit.js',

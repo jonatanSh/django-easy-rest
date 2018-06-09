@@ -1,4 +1,11 @@
+// injects for disabling debugging
+function DummyDebugger() {
+
+}
+
+Debugger = typeof(Debugger) !== "undefined" ? Debugger : DummyDebugger;
 let debugHandler = new Debugger();
+
 function RequestHandler(url) {
     this.url = url;
     /**
@@ -32,8 +39,8 @@ function RequestHandler(url) {
     };
 
     this.SendAsync = function (data, OnSuccess, OnError = function (error) {
-    }, additionalSuccessData={}) {
-        onErrorWrapper = function(error) {
+    }, additionalSuccessData = {}) {
+        onErrorWrapper = function (error) {
             debugHandler.create(error.responseJSON);
             debugHandler.handle();
             OnError(error);
@@ -46,15 +53,15 @@ function RequestHandler(url) {
                 data: data,
                 headers: {"X-CSRFToken": getCsrf()},
 
-                success: function(data){
+                success: function (data) {
                     let functionData = data;
-                    try{
+                    try {
                         functionData = JSON.parse(functionData);
                     }
-                    catch(err){
+                    catch (err) {
 
                     }
-                    for(key in additionalSuccessData){
+                    for (key in additionalSuccessData) {
                         functionData[key] = additionalSuccessData[key];
                     }
                     OnSuccess(functionData);
