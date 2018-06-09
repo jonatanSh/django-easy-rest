@@ -112,12 +112,18 @@ class DebugView(TemplateView):
 
     def get_context_data(self, **kwargs):
         debug_data = self.request.session.get("debug_info_api")['data']
-
         ctx = super(DebugView, self).get_context_data(**kwargs)
+        if "input" in debug_data:
+            request = debug_data["input"]
+            request_data = request['request_data']
+            ctx["api_input"] = json.dumps(request_data, indent=1)
+            ctx["api_code"] = request["request_code"]
         if 'debug_url' in debug_data:
             del debug_data['debug_url']
+            del debug_data['input']
         ctx['output'] = json.dumps(debug_data, indent=1)
         tb = self.request.session.get("last_debug_error")
         if tb:
             ctx['traceback'] = json.dumps(tb, indent=1)
+
         return ctx

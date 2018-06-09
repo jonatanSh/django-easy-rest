@@ -140,6 +140,15 @@ class RestApiView(APIView):
             # returning general error
             return self.return_response(data=self.base_response, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def rebuild_request_code(self):
+        data = self.request.data
+        return "\n".join([
+            "// the code below is built to debug, and uses SyncRequests, "
+            "if your request was Async, the code will generate a sync request",
+            "api = new RequestHandler({})".format(self.request.path),
+            "api.SendSync({})".format(json.dumps(dict(data), indent=1))
+        ])
+
     def debug(self, error, handler):
         if settings.DEBUG:
             self.debugger.update(error, handler)
@@ -152,6 +161,10 @@ class RestApiView(APIView):
         ]:
             self.request.session['last_debug_error'] = self.debugger.serialize()
             self.request.session.save()
+            data["input"] = {
+                "request_data": self.request.data,
+                "request_code": self.rebuild_request_code()
+            }
             return DebugHandler(request=self.request, data=data, status=status).handle()
         return Response(data, status)
 
