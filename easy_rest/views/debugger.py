@@ -120,6 +120,7 @@ class DebugView(TemplateView):
             ctx["api_code"] = request["request_code"]
         if 'debug_url' in debug_data:
             del debug_data['debug_url']
+        if "input" in debug_data:
             del debug_data['input']
         ctx['output'] = json.dumps(debug_data, indent=1)
         tb = self.request.session.get("last_debug_error")
