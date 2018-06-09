@@ -102,8 +102,9 @@
 <div class="container">
     <h1>The api action failed, here you can debug the api, view the output json and step throw the code </h1>
     {% if traceback %}
-        <pre class="html"><code>
-        {{traceback}}
+    <pre class="json"><code>
+<!--traceback should start with the line don't format this!-->
+{{traceback}}
     </code></pre>
     {% endif %}
     <p>
@@ -116,6 +117,8 @@
     <div class="collapse" id="jsonOutput">
         <div class="card card-body">
    <pre id="#jsonOutput" class="json"><code>
+<!--output should start with the line don't format this!-->
+
 {{output}}
 </code></pre>
         </div>

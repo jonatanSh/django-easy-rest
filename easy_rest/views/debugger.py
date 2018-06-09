@@ -7,7 +7,6 @@ from django.http.response import HttpResponseForbidden
 import json
 from django.conf import settings
 import traceback
-import sys
 
 
 class DebugHandler(object):
@@ -47,6 +46,19 @@ def get_error(error):
     return trace
 
 
+def create_trace(last_error):
+    error = last_error['error']
+    handler = last_error['handler']
+    del last_error['error']
+    del last_error['handler']
+
+    return {
+        "type": get_error(error),
+        "details": traceback.format_exception(**last_error),
+        "handler": handler
+    }
+
+
 class DebugView(TemplateView):
     template_name = "easy_rest/debug.html"
 
@@ -72,5 +84,7 @@ class DebugView(TemplateView):
         if 'debug_url' in debug_data:
             del debug_data['debug_url']
         ctx['output'] = json.dumps(debug_data, indent=1)
-        ctx['traceback'] = self.request.session.get('last_debug_error', None)
+        tb = self.request.session.get("last_debug_error")
+        if tb:
+            ctx['traceback'] = json.dumps(tb, indent=1)
         return ctx
