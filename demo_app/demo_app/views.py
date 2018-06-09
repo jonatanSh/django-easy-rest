@@ -20,8 +20,9 @@ class ApiTest(ModelUnpacker, FunctionUnPackerMixin, DecorativeKeysMixin, HelpMix
     def __init__(self, *args, **kwargs):
         super(ApiTest, self).__init__(*args, **kwargs)
 
-    def echo(self, data):
-        return {"echo": data}
+    @staticmethod
+    def echo():
+        return {"echo": "t"}
 
     def calculate(self, data):
         return {"result": eval(data)}

@@ -80,8 +80,10 @@ class FunctionUnPackerMixin(Resolver):
             # removing self from variables if self in variables because the call is self.call
             if 'self' in keys:
                 keys.remove('self')
-            # if there are no keys
-            keys = [] if not keys else keys
+
+            if not keys:
+                return {}  # no vars
+
             for key in keys:
                 # if data has this key
                 if key in data:

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status as http_status
 from django.conf import settings
 from .debugger import DebugHandler, DebugCache
+import inspect
 
 
 class RestApiView(APIView):
@@ -181,7 +182,12 @@ class RestApiView(APIView):
 
     def call_method(self, data, method):
         # basic call method in the easy rest
-        return method(data)
+        args = inspect.signature(method)
+        if "self" in args:
+            args.remove("self")
+        if len(args) > 0:
+            return method(data)
+        return method()
 
     def _method_wrapper(self, data, method, action):
         """
