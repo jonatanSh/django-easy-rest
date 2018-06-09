@@ -18,6 +18,8 @@ from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
 from demo_app.views import ApiTest, RestUpdate, RestCreate, WelcomePage, ActiveTemplate, Error
 
+# this will auto realod the app for any change in easy_rest app
+
 urlpatterns = [
     url(r'^update/', RestUpdate.as_view(), name='update-view'),
     url(r'^active_ctx/', ActiveTemplate.as_view(), name='active-ctx'),
