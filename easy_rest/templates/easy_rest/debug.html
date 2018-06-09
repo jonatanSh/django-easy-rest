@@ -99,28 +99,26 @@
 </head>
 <body>
 
-<div class="container">
+<div class="">
     <h1>The api action failed, here you can debug the api, view the output json and step throw the code </h1>
     {% if traceback %}
     <pre class="json"><code>
 <!--traceback should start with the line don't format this!-->
 {{traceback}}
+        {{output}}
     </code></pre>
     {% endif %}
+
+
     <p>
-        <a class="btn btn-primary" data-toggle="collapse" href="#jsonOutput" role="button" aria-expanded="false">
-            Json api output
+        <a class="btn btn-primary" data-toggle="collapse" href="#jsonInput" role="button" aria-expanded="false">
+            view request
         </a>
     </p>
-
     <hr>
-    <div class="collapse" id="jsonOutput">
+    <div class="collapse" id="jsonInput">
         <div class="card card-body">
-   <pre id="#jsonOutput" class="json"><code>
-<!--output should start with the line don't format this!-->
 
-{{output}}
-</code></pre>
         </div>
     </div>
 

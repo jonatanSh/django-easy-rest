@@ -1,26 +1,9 @@
-import sys
 import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status as http_status
 from django.conf import settings
-from .debugger import DebugHandler, create_trace
-
-
-class ErrorObject(object):
-    def __init__(self, tb, handler):
-        self.tb = tb
-        self.handler = handler
-        self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
-
-    def serialize(self):
-        return {
-            "error": self.tb,
-            "etype": self.exc_type,
-            "value": self.exc_value,
-            "tb": self.exc_traceback,
-            "handler": self.handler,
-        }
+from .debugger import DebugHandler, DebugCache
 
 
 class RestApiView(APIView):
@@ -39,6 +22,8 @@ class RestApiView(APIView):
 
     # base_response initial value.
     base_response = None
+
+    debugger = DebugCache()
 
     def get(self, reuqest):
         """
@@ -82,9 +67,13 @@ class RestApiView(APIView):
         :param request: WSGI request
         :return: (httpResponse) processed data
         """
-        if settings.DEBUG and 'last_debug_error' in self.request.session:
-            self.request.session['last_debug_error'] = None
-            self.request.session.save()
+        if settings.DEBUG:
+            # creating a new debugger
+            self.debugger = DebugCache()
+            # reset last debug message
+            if 'last_debug_error' in self.request.session:
+                self.request.session['last_debug_error'] = None
+                self.request.session.save()
         self.request = request
         # creating the base response
         self.base_response = self.create_base_response()
@@ -123,11 +112,9 @@ class RestApiView(APIView):
                         # returning the response
                         return self.return_response(data=self.base_response, status=http_status.HTTP_200_OK)
                     else:
-                        tb_error = error if isinstance(error, Exception) else None
                         # returning error response
                         return self.return_response(data=self.base_response,
-                                                    status=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                                    error=tb_error, handler="method_wrapper()")
+                                                    status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
                 # if this method was not found
                 except (AttributeError, ImportError) as error:
@@ -147,22 +134,24 @@ class RestApiView(APIView):
             # if there is a general error
             self.base_response["error"] = "general api error"
             if settings.DEBUG:
+                self.debug(error, "(Exception, json.JSONDecodeError)")
                 self.base_response['debug'].update({self.restifiy('exception type'): str(type(error)),
                                                     self.restifiy('exception args'): error.args})
             # returning general error
-            return self.return_response(data=self.base_response, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                        error=error, handler="(Exception, json.JSONDecodeError)")
+            return self.return_response(data=self.base_response, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def return_response(self, data, status, error=None, handler=None):
+    def debug(self, error, handler):
+        if settings.DEBUG:
+            self.debugger.update(error, handler)
+
+    def return_response(self, data, status):
         if status in [
             http_status.HTTP_400_BAD_REQUEST,
             http_status.HTTP_404_NOT_FOUND,
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
         ]:
-            if error:
-                error_object = ErrorObject(error, handler)
-                self.request.session['last_debug_error'] = create_trace(error_object.serialize())
-                self.request.session.save()
+            self.request.session['last_debug_error'] = self.debugger.serialize()
+            self.request.session.save()
             return DebugHandler(request=self.request, data=data, status=status).handle()
         return Response(data, status)
 
@@ -198,7 +187,6 @@ class RestApiView(APIView):
         additional = None
         # debug data
         debug = {}
-        exception = None
 
         try:
             # calling the method
@@ -209,10 +197,10 @@ class RestApiView(APIView):
                           self.function_field_name: action}
             if settings.DEBUG:
                 debug = {'exception-type': str(type(error)), 'exception-args': error.args}
-            exception = error
+                self.debug(error, "method_wrapper_base")
 
         if additional:
-            return additional, debug, exception
+            return additional, debug, True
         if out:
             return out, debug, False
         if settings.DEBUG:

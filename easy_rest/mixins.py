@@ -148,15 +148,15 @@ class HelpMixin(object):
         # debug dictionary
         debug = {}
 
-        exception = None
-
         # trying to call the method
         try:
             out = self.call_method(data=data, method=method)
 
         # excepting any exception when calling
         except Exception as error:
-            exception = error
+            # will be resolved
+            self.debug(error, "HelpMixin.method_wrapper")
+
             # key is used to check if this method has helper are use global
             key = '__all__' if action not in self.method_helpers else action
 
@@ -184,7 +184,7 @@ class HelpMixin(object):
 
         # deciding what to return
         if additional:
-            return additional, debug, exception
+            return additional, debug
         if out:
             return out, debug, False
         # if there is no additional and no out.

@@ -1,12 +1,13 @@
+import sys
+import json
+import traceback
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from ..utils.utils import reverse_lazy
 from uuid import uuid4
 from rest_framework.response import Response
 from django.http.response import HttpResponseForbidden
-import json
 from django.conf import settings
-import traceback
 
 
 class DebugHandler(object):
@@ -25,6 +26,38 @@ class DebugHandler(object):
         self.request.session.save()
         self.data['debug_url'] = reverse_lazy("easy_rest:debugger") + "?token={}".format(token)
         return Response(data=self.data, status=self.status)
+
+
+class DebugObject(object):
+    def __init__(self, tb, handler):
+        self.tb = tb
+        self.handler = handler
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        self.trace = traceback.format_exception(exc_type, exc_value, exc_traceback)
+
+    def serialize(self):
+        return {
+            "error": repr(self.tb),
+            "trace": self.get_trace(),
+            "handler": self.handler,
+        }
+
+    def get_trace(self):
+        return [t.lstrip().rstrip().replace("\n", "").replace("\r", "") for t in self.trace]
+
+
+class DebugCache(object):
+    def __init__(self):
+        self.cache = []
+
+    def update(self, tb, handler):
+        self.cache.append(DebugObject(tb, handler).serialize())
+
+    def serialize(self):
+        data = []
+        for obj in self.cache:
+            data.append(obj)
+        return data
 
 
 class TbFile(object):
