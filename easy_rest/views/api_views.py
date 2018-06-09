@@ -146,7 +146,7 @@ class RestApiView(APIView):
             "// the code below is built to debug, and uses SyncRequests, "
             "if your request was Async, the code will generate a sync request",
             "api = new RequestHandler({})".format(self.request.path),
-            "api.SendSync({})".format(json.dumps(dict(data), indent=1))
+            "api.SendSync({})".format(json.dumps(data, indent=1))
         ])
 
     def debug(self, error, handler):
