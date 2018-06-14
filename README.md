@@ -149,7 +149,7 @@ output (debug mode)
                 "username": "jonatan",
                 "last_name": "",
                 "_password": null,
-                "password": "pbkdf2_sha256$36000$oqbcQyNRQE2S$QOS41M4rvGlvLZmS4mzlBPA7CftTRuoG3jcQzYL0QvQ="
+                "password": "..."
             },
             "action": "get_username"
         }
