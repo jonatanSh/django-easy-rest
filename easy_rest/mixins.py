@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from easy_rest.utils.search_model import GetModelByString
 import json
 from django.conf import settings
-
+from .utils.serializers import DynamicEncoder
 
 class Resolver(object):
     """
@@ -436,3 +436,32 @@ class TemplateContextFetcherMixin(object):
             return HttpResponse(json.dumps(self.get_context_data(request=request)))
 
         return self.post_method_override(request, *args, **kwargs)
+
+
+class JavascriptContextMixin(object):
+    """
+    This mixin allowed to use context inside javascript using the context.js
+    """
+    def get_method_override(self, *args, **kwargs):
+        return HttpResponse("To override the get method declare get_method_override in your view - django-easy-rest")
+
+    def get(self, request, *args, **kwargs):
+        """
+
+        :param request: WSGI request
+        :param args:
+        :param kwargs:
+        :return: HttpResponse containing updated context
+        """
+
+        action = request.GET.get("action", "")
+        if action == "fetch_context":
+            # unique serializer here !!
+            return HttpResponse(json.dumps(self.get_context_data(request=request), cls=DynamicEncoder))
+
+        return super(JavascriptContextMixin, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super(JavascriptContextMixin, self).get_context_data(**kwargs)
+        ctx['js_context'] = True
+        return ctx

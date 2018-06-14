@@ -3,7 +3,7 @@ from easy_rest.mixins import ModelUnpacker, FunctionUnPackerMixin, DecorativeKey
 from django.views.generic import CreateView, UpdateView, TemplateView
 from django.contrib.auth.models import User
 from easy_rest.test_framework.recorder.post_record_mixins import PostRecordTestGenerator
-from easy_rest.mixins import TemplateContextFetcherMixin
+from easy_rest.mixins import TemplateContextFetcherMixin, JavascriptContextMixin
 from datetime import datetime
 from random import randint
 
@@ -49,8 +49,13 @@ class RestCreate(FormPostMixin, CreateView):
     success_message = 'created user successfully'
 
 
-class WelcomePage(TemplateView):
+class WelcomePage(JavascriptContextMixin, TemplateView):
     template_name = 'demo_app/home.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(WelcomePage, self).get_context_data(**kwargs)
+        ctx['data'] = "This is javascript context mixin"
+        return ctx
 
 
 class ActiveTemplate(TemplateContextFetcherMixin, TemplateView):

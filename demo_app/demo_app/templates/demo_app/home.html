@@ -1,5 +1,10 @@
 {%extends "demo_app/index.html"%}
+{% load easy_rest %}
 
+{%block head%}
+
+{% load_rest_scripts %}
+{% endblock head %}
 {%block body%}
 <center><h1>the following code is all that is for the easy rest to work:</h1></center>
 <pre>

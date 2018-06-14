@@ -5,23 +5,20 @@ function DummyDebugger() {
 
 Debugger = typeof(Debugger) !== "undefined" ? Debugger : DummyDebugger;
 let debugHandler = new Debugger();
-const REQUEST_TYPES = {
-    post: "POST",
-    get: "GET",
-};
 
-function RequestHandler(url) {
+
+function RequestHandler(url = window.restConsts.API_PATH) {
     this.url = url;
     /**
      * on failure returns {"error":"error value"}
      * @return {object}
      */
     this.sendSync = function (data) {
-        return this.baseSync(data, REQUEST_TYPES.post);
+        return this.baseSync(data, window.restConsts.REQUEST_TYPES.post);
     };
 
     this.getSync = function (data) {
-        return this.baseSync(data, REQUEST_TYPES.get);
+        return this.baseSync(data, window.restConsts.REQUEST_TYPES.get);
     };
 
     // legacy
@@ -56,12 +53,12 @@ function RequestHandler(url) {
 
     this.sendASync = function (data, onSuccess, onError = function (error) {
     }, additionalSuccessData = {}) {
-        return this.baseASync(data, onSuccess, onError, additionalSuccessData, REQUEST_TYPES.post);
+        return this.baseASync(data, onSuccess, onError, additionalSuccessData, window.restConsts.REQUEST_TYPES.post);
     };
 
     this.getASync = function (data, onSuccess, onError = function (error) {
     }, additionalSuccessData = {}) {
-        return this.baseASync(data, onSuccess, onError, additionalSuccessData, REQUEST_TYPES.get);
+        return this.baseASync(data, onSuccess, onError, additionalSuccessData, window.restConsts.REQUEST_TYPES.get);
     };
 
     // legacy

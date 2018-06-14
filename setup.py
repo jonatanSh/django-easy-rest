@@ -8,6 +8,7 @@ try:
 
     README = pypandoc.convert(os.path.join(os.path.dirname(__file__), 'README.md'), 'rst')
 except (ImportError, OSError):
+    print("Can't build readme")
     README = ""
 setup(
     name='django-easy-rest',

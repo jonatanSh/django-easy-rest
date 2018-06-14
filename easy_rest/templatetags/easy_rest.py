@@ -23,25 +23,25 @@ js_base = '<script src="' + root + '/{}"></script>'
 css_base = '<link rel="stylesheet" href="' + root + '/{}">'
 
 
-@register.simple_tag()
-def load_rest_scripts():
+@register.simple_tag(takes_context=True)
+def load_rest_scripts(context):
     """
     loads only easy rest scripts
     :return: html with the scripts
     """
-    data = _get_rest_scripts()
+    data = _get_rest_scripts(context)
     if load_message:
         data = load_message + "\n" + data
     return mark_safe(data)
 
 
-@register.simple_tag()
-def load_rest_all():
+@register.simple_tag(takes_context=True)
+def load_rest_all(context):
     """
     load rest scripts along with bootstrap
     :return: html including bootstrap and rest scripts
     """
-    data = _get_rest_scripts() + _get_bootstrap()
+    data = _get_rest_scripts(context) + _get_bootstrap()
     if load_message:
         data = load_message + "\n" + data
     return mark_safe(data)
@@ -68,7 +68,7 @@ def load_debug_scripts():
     return _load_debug_scripts() + load_rest_all()
 
 
-def _get_rest_scripts():
+def _get_rest_scripts(context=None):
     """
     :return: html scripts
     """
@@ -77,11 +77,14 @@ def _get_rest_scripts():
         files.append("debugger.js")
     files += [
         'jquery-3.2.1.min.js',
+        'restConsts.js',
         'Request.js',
         'PostHandler.js',
         'Submit.js',
         'fetch/restFetch.js'
     ]
+    if context and context.get("js_context"):
+        files.append("context.js")
     return '<!--start of easy rest scripts-->\n{}\n<!--end of easy rest scripts-->'.format(
         '\n'.join([js_base.format(file) for file in files])
     )
