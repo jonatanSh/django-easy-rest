@@ -202,7 +202,7 @@ class RestApiView(APIView):
 
     def call_method(self, data, method):
         # basic call method in the easy rest
-        args = inspect.signature(method)
+        args = list(inspect.signature(method).parameters)
         if "self" in args:
             args.remove("self")
         if len(args) > 0:

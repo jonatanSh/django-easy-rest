@@ -12,7 +12,7 @@ except (ImportError, OSError):
     README = ""
 setup(
     name='django-easy-rest',
-    version='2.7',
+    version='2.8',
     packages=find_packages(),
     include_package_data=True,
     install_requires=['djangorestframework', 'django'],
