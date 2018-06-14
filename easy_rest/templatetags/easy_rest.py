@@ -64,7 +64,7 @@ def _load_debug_scripts():
 
 
 @register.simple_tag(takes_context=True)
-def load_debug_scripts():
+def load_debug_scripts(context):
     return _load_debug_scripts() + load_rest_all(context)
 
 
