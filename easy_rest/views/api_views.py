@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status as http_status
 from django.conf import settings
 from .debugger import DebugHandler, DebugCache
+from copy import copy
 import inspect
 
 
@@ -28,6 +29,14 @@ class RestApiView(APIView):
     base_response = None
 
     debugger = DebugCache()
+
+    @property
+    def api_allowed_method(self):
+        if self.request.method == "GET":
+            return self.api_allowed_methods_get
+        elif self.request.method == "POST":
+            return self.api_allowed_methods_post
+        return []
 
     def get(self, request):
         """
