@@ -63,9 +63,9 @@ def _load_debug_scripts():
     return mark_safe("\n".join(data))
 
 
-@register.simple_tag()
+@register.simple_tag(takes_context=True)
 def load_debug_scripts():
-    return _load_debug_scripts() + load_rest_all()
+    return _load_debug_scripts() + load_rest_all(context)
 
 
 def _get_rest_scripts(context=None):
