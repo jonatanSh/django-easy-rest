@@ -5,6 +5,7 @@ from rest_framework import status as http_status
 from django.conf import settings
 from .debugger import DebugHandler, DebugCache
 import inspect
+from urllib.parse import quote
 
 
 class RestApiView(APIView):
@@ -159,15 +160,24 @@ class RestApiView(APIView):
 
     def rebuild_request_code(self):
         data = self.request.data
+        get_url = ""
         if self.request.method == "GET":
             action = "GetSync"
+            parameters_map = ""
+            for key, value in data:
+                parameters_map += "&{0}={1}".format(key, value)
+            parameters_map = quote(parameters_map[1:])
+            get_url = "{0}{1}".format(self.request.path, parameters_map)
+            get_url = "request url = \"{0}\"".format(get_url)
         else:
             action = "SendSync"
+
         return "\n".join([
             "// the code below is built to debug, and uses SyncRequests, "
             "if your request was Async, the code will generate a sync request",
-            "api = new RequestHandler({})".format(self.request.path),
-            "api.{}({})".format(action, json.dumps(data, indent=1))
+            "api = new RequestHandler('{}')".format(self.request.path),
+            "api.{}({});".format(action, json.dumps(data, indent=1)),
+            "{0}".format(get_url)
         ])
 
     def debug(self, error, handler):

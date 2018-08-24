@@ -5,8 +5,12 @@ function Debugger(data) {
 
     this.handle = function () {
         if (this.underDebug) {
-            // validate the token here ?
-            window.location.href = this.data['debug_url'] + "&referer=" + encodeURIComponent(window.location.href);
+            if ("debug_url" in this.data) {
+                window.location.href = this.data['debug_url'] + "&referer=" + encodeURIComponent(window.location.href);
+            }
+            else {
+                console.error("An error occurred (no debug url in data), in your api details:", this.data);
+            }
         }
     };
 

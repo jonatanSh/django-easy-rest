@@ -5,7 +5,9 @@
 {%block body%}
 
 <h1>Click the button to spawn an api error</h1>
-<a class="btn btn-primary" href='javascript:api.SendSync({"action":"calculate", "data":"1/0"})'>Api error</a>
+<a class="btn btn-primary" href='javascript:api.SendSync({"action":"calculate", "data":"1/0"})'>Api error post</a>
+<a class="btn btn-primary" href='javascript:api.GetSync({"action":"calculate", "data":"1/0"})'>Api error get</a>
+
 {%endblock body%}
 
 {% block page_javascript %}
