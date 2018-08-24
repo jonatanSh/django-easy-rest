@@ -95,19 +95,6 @@ def get_error(error):
     return trace
 
 
-def create_trace(last_error):
-    error = last_error['error']
-    handler = last_error['handler']
-    del last_error['error']
-    del last_error['handler']
-
-    return {
-        "type": get_error(error),
-        "details": traceback.format_exception(**last_error),
-        "handler": handler
-    }
-
-
 class DebugView(TemplateView):
     template_name = "easy_rest/debug.html"
     debug_data = {}
@@ -121,7 +108,6 @@ class DebugView(TemplateView):
         return super(DebugView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        print(self.debug_data)
         if not self.debug_data:
             return HttpResponseNotFound("no debug data avilable")
 
@@ -141,15 +127,17 @@ class DebugView(TemplateView):
         if "input" in debug_data:
             request = debug_data["input"]
             request_data = request['request_data']
-            ctx["api_input"] = json.dumps(request_data, indent=2)
+            ctx["api_input"] = json.dumps(request_data, indent=1)
             ctx["api_code"] = request["request_code"]
         if 'debug_url' in debug_data:
             del debug_data['debug_url']
         if "input" in debug_data:
             del debug_data['input']
-        ctx['output'] = json.dumps(debug_data, indent=2)
+        ctx['output'] = json.dumps(debug_data, indent=1)
         tb = self.request.session.get("last_debug_error")
         if tb:
-            ctx['traceback'] = json.dumps(tb, indent=2)
+            ctx['traceback'] = json.dumps(
+                {"traceback": tb, "note": "the traceback is returned from the session and might be outdated"},
+                indent=1)
 
         return ctx

@@ -5,7 +5,6 @@ from rest_framework import status as http_status
 from django.conf import settings
 from .debugger import DebugHandler, DebugCache
 import inspect
-from urllib.parse import quote
 
 
 class RestApiView(APIView):
@@ -162,11 +161,12 @@ class RestApiView(APIView):
         data = self.request.data
         get_url = ""
         if self.request.method == "GET":
+            data = self.request.GET
             action = "GetSync"
             parameters_map = ""
-            for key, value in data:
+            for key, value in data.items():
                 parameters_map += "&{0}={1}".format(key, value)
-            parameters_map = quote(parameters_map[1:])
+            parameters_map = parameters_map[1:]
             get_url = "{0}{1}".format(self.request.path, parameters_map)
             get_url = "request url = \"{0}\"".format(get_url)
         else:
@@ -185,6 +185,7 @@ class RestApiView(APIView):
             self.debugger.update(error, handler)
 
     def return_response(self, data, status):
+        request_data = self.request.data if self.request.method == "POST" else self.request.GET
         if status in [
             http_status.HTTP_400_BAD_REQUEST,
             http_status.HTTP_404_NOT_FOUND,
@@ -193,7 +194,7 @@ class RestApiView(APIView):
             self.request.session['last_debug_error'] = self.debugger.serialize()
             self.request.session.save()
             data["input"] = {
-                "request_data": self.request.data,
+                "request_data": request_data,
                 "request_code": self.rebuild_request_code()
             }
             return DebugHandler(request=self.request, data=data, status=status).handle()
