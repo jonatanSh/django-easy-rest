@@ -12,10 +12,10 @@ except (ImportError, OSError):
     README = ""
 setup(
     name='django-easy-rest',
-    version='2.8',
+    version='2.9',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['djangorestframework', 'django'],
+    install_requires=['djangorestframework', "requests", 'django'],
     license='MIT License',
     description='A simple Django app to create rest applications',
     long_description=README,
