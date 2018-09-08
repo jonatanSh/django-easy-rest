@@ -39,7 +39,7 @@ class DebugHandler(object):
             "token": token,
             "data": self.data
         })
-        self.data['debug_url'] = reverse_lazy("easy_rest:debugger") + "?token={0}&debug_data={1}".format(token,
+        self.data['debug_url'] = reverse_lazy("easy_rest:debugger") + "/?token={0}&debug_data={1}".format(token,
                                                                                                          debug_data)
         return Response(data=self.data, status=self.status)
 
