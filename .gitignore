@@ -19,4 +19,6 @@
 dist/
 
 django_easy_rest.egg-info/
-
+/build
+build/
+/build/
