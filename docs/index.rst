@@ -1,7 +1,8 @@
 Welcome to django easy rest's documentation!
 ============================================
 
-Django easy rest is a rest framework built on top of the awesome django rest framework
+Django easy rest is a rest framework with the focus of making development faster,
+it is built on top of the awesome django rest framework (drf).
 
 the main purpose of this framework is to give a speed boost to developers in rest api fields.
 
@@ -15,5 +16,13 @@ List of contents
     :maxdepth: 2
 
     installation
+    view
+    function_unpacker
+    js_context
+    form_post_mixin
+    live_context
+    model_unpacker
+    decorative_keys
+    tests
     debugger
 

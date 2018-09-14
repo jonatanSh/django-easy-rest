@@ -8,9 +8,9 @@ global_template = (
     "from {app_name}.views import {view_name}\n"
     "from django.test import RequestFactory\n"
     "from django.contrib.auth.models import AnonymousUser, User\n"
-    "from easy_rest.test_framework.resolvers.resolve import register_unitest\n"
+    "from easy_rest.test_framework.resolvers.resolve import register_unittest\n"
     "from django.test.utils import override_settings\n\n"  # pep 8
-    "register_unitest()\n\n\n"  # pep8
+    "register_unittest()\n\n\n"  # pep8
     "def resolve_user(pk):\n"
     "    try:\n"
     "        return User.objects.get(pk=pk)\n"

@@ -46,7 +46,7 @@ def get_tests_file(app_name, file_name, data=""):
     return path, data
 
 
-def register_unitest():
+def register_unittest():
     """
     Register django env to know it's under a test
     :return: None

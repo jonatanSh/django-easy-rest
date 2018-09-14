@@ -35,3 +35,13 @@ if you change the root url (for instance the url is myproject/api/something) you
 .. code-block:: python
 
     EASY_REST_ROOT_URL = "myproject/api/something"
+
+Base html file
+^^^^^^^^^^^^^^
+
+.. code-block:: html
+
+    {% load easy_rest %}
+    <head>
+        {% load_rest_scripts %}
+    </head>
